@@ -1,6 +1,8 @@
 import { DataTypes } from "sequelize"
 import * as Models from "./models"
 import Postgres from "./Postgres";
+import RedisClient from "./Redis";
+import { ListenersDefaultValue } from "../types/ListenersType";
 
 Models.User.init (
   {
@@ -10,6 +12,8 @@ Models.User.init (
     presetsIsActive: { type: DataTypes.BOOLEAN, defaultValue: true, allowNull: false },
     program: {type: DataTypes.STRING(50)},
     messageId: { type: DataTypes.INTEGER },
+    _fullName: {type: DataTypes.STRING(100)},
+    _username: {type: DataTypes.STRING(50)}
   }, {
     sequelize: Postgres,
     tableName: 'users',
@@ -17,3 +21,19 @@ Models.User.init (
   }
 );
 
+
+
+
+export const initDatabasePromise = (async () => {
+  return Promise.all([
+    Postgres.authenticate()
+      .then(() => Postgres.sync())
+      .then(async () => {
+        for (const modelName of Object.keys(Models) as Array<keyof typeof Models>){
+          await Models[ modelName ].sync()
+        }
+      })
+      .then(() => console.log('Postgres is ready')),
+    RedisClient.connect().then(() => console.log('Redis is ready'))
+  ])
+})();

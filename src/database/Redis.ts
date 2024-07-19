@@ -18,3 +18,5 @@ RedisClient
     RedisClient.quit()
   })
 
+export default RedisClient
+

@@ -1,5 +1,6 @@
 import { Optional } from "sequelize";
-import { ProgramsType } from "../types/programs";
+import { ProgramsType } from "../types/Programs";
+import { ListenersType } from "../types/ListenersType";
 
 export interface UserAttributes {
   id: number;
@@ -8,19 +9,22 @@ export interface UserAttributes {
   isActive: boolean;
   program: ProgramsType;
   messageId: number | null; // добавлено private
+  _fullName: string;
+  _username: string;
 }
   
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActive' > {}
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActive' | 'presetsIsActive' | 'program' > {}
 
 
-export interface UserdataAttributes {
-  userId: number;
-  name: string;
-  username: string;
+
+export interface PointAttributes {
+  id: number;
+  morningCourierId: number;
+  eveningCourierId: number;
+  listeners: ListenersType
 }
 
-export interface UserdataCreationAttributes extends UserdataAttributes {}
-
+export interface PointCreationAttributes extends Optional<PointAttributes, 'morningCourierId' | 'eveningCourierId' | 'listeners'> {}
 
 
 

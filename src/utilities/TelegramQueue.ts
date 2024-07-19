@@ -22,7 +22,7 @@ class TelegramQueue {
     this.processQueue()
   }
 
-  async add(handler: () => Promise<any>, options: TelegramQueueOptions = {}){
+  async add(handler: () => Promise<any | void>, options: TelegramQueueOptions = {}){
     const {priority = 1, delay = 0} = options;
     if (! this.queue[priority]){
       this.queue[priority] = new Array()

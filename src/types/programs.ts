@@ -1,1 +1,1 @@
-export type ProgramsType = ''
+export type ProgramsType = 'selectPoints' | 'presets'
