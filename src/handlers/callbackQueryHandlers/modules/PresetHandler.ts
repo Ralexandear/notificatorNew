@@ -1,0 +1,98 @@
+import TelegramBot from "node-telegram-bot-api";
+import { User } from "../../../database/models";
+import splitCommand from "../../../utilities/splitCommand";
+import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
+import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
+import { PresetActionType } from "../../../types/PresetActionType";
+import { Log } from "../../../utilities/Log";
+import BotError from "../../../Errors/BotError";
+import PointsController from "../../../controllers/databaseControllers/PointsController";
+
+
+
+async function getSelectedPoint(pointId: string | number) {
+  if (typeof pointId === 'string') {
+    const string = pointId;
+    pointId = +pointId;
+    if (isNaN(pointId)) {
+      throw BotError.cannotParseInt(string)
+    }
+  }
+  return PointsController.find(pointId)
+}
+
+
+
+async function openPresetMenu( user: User ) {
+  const {text, reply_markup} = await MessageConstructor.menu().presets(user);
+  user.editMessageText(text, {reply_markup})
+  return
+}
+
+
+
+export async function PresetHandler(user: User, callback: TelegramBot.CallbackQuery) {
+  if (! callback.data) return;
+
+  const {action, params} = splitCommand(callback.data);
+  const [presetAction, pointId] = params as [PresetActionType | undefined, string | undefined]
+    
+  if (presetAction === undefined) { //отвечает за активацию и деактивацию пресета глобально
+    if (action === Buttons.activate().callback_data) {
+      user.preset().activate();
+    } else if (action === Buttons.deactivate().callback_data){
+      user.preset().deactivate();
+    }
+    openPresetMenu(user)
+    return
+  } else if (pointId === undefined) {
+    throw new BotError('Unexpected point id: ' + pointId);
+  } 
+
+  if (presetAction === 'selectPoint') {
+    var selectedPoint = await getSelectedPoint(pointId)
+  } else if (presetAction === 'selectPreset') {
+    
+    if (action === Buttons.backButton().callback_data) {
+      openPresetMenu(user)
+      return
+    }
+
+    const selectedPointId = (() => {
+      const inlineKeyboard = callback.message?.reply_markup?.inline_keyboard;
+      if (! inlineKeyboard) throw new ReferenceError('inlineKeyboard is missing, but required!')
+      
+      const backButton = Buttons.backButton()
+      for (const row of inlineKeyboard) {
+        for (const button of row){
+          if (button.callback_data === undefined) continue;
+          
+          const {action, params} = splitCommand(button.callback_data);
+          if (backButton.callback_data === action) return params[0]
+        }
+      }
+      throw new Error('Selected point not found in reply markup!')
+    })();
+
+    var selectedPoint = await getSelectedPoint(selectedPointId);
+    const preset = await user.preset().getForPoint(selectedPoint.id);
+
+    if (action === Buttons.activate().callback_data) {
+      preset.addPointsToListen(selectedPoint.id)
+    } else if (action === Buttons.deactivate().callback_data){
+      preset.removePointsToListen(selectedPoint.id)
+    } else {
+      Log('Unhandled request, unsupported action', action as string);
+      return
+    }
+  } else {
+    Log('Unhandled request, unsupported presetAction', presetAction as string);
+    return
+  }
+
+  const {text, reply_markup} = await MessageConstructor.presets(user, selectedPoint);
+  user.editMessageText(text, {reply_markup})
+  return
+}
+
+export default PresetHandler

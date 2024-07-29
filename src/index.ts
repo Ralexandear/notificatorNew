@@ -1,27 +1,28 @@
 import 'dotenv/config';
-import './../src/bot/cron/cron'
 import TelegramBot from 'node-telegram-bot-api';
 import { TextMessageHandler } from './handlers/textMessageHandlers/TextMessageHandler';
 import { initDatabasePromise } from './database/initDatabase';
 import { User } from './database/models';
-import UserController from './controllers/UserController';
+import UserController from './controllers/databaseControllers/UserController';
+import { CallbackQueryHandler } from './handlers/callbackQueryHandlers/CallbackQueryHandler';
 
+const botToken = process.env.BOT_TOKEN;
+if (! botToken) throw new ReferenceError('Bot token is missing in env')
 
-const Bot = new TelegramBot( process.env.BOT_TOKEN as string, { polling: true});
+const Bot = new TelegramBot( botToken, { polling: true});
+Bot.on("message", TextMessageHandler)
+Bot.on("callback_query", CallbackQueryHandler)
+
 let Admin: User
-
-
 
 const botInitializationPromise = (async () => {
   await initDatabasePromise;
-  console.log(await Bot.getMe());
   const adminTelegramId = process.env.ADMIN;
   
   if (! adminTelegramId) throw new Error('Required parameter ADMIN is missing in env')
-  Admin = await UserController.find( adminTelegramId )
-
-  Bot.on("message", TextMessageHandler)
+  Admin = await UserController.find( adminTelegramId ) || await UserController.create(adminTelegramId, 'ADMIN', 'ralexandear')
   
+  console.log(await Bot.getMe());
   console.log('Bot is ready')
 })();
 

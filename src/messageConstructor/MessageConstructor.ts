@@ -1,8 +1,10 @@
 import TelegramBot from "node-telegram-bot-api";
-import { User } from "../database/models"
+import { Point, User } from "../database/models"
 import MessageText from "./messageText"
 import { InlineKeyboardReplyMarkup } from "./replyMarkup/InlineKeyboardReplyMarkup";
 import ReplyKeyboardMarkup from "./replyMarkup/ReplyKeyboardMarkup";
+import { ShiftSelectorType } from "../types/ShiftType";
+import { ShiftSizeType } from "../types/ShiftSizeType";
 
 
 export class MessageConstructor {
@@ -83,6 +85,43 @@ export class MessageConstructor {
         return {text, reply_markup}
       }
     }
+  }
+
+  static points() {
+    const messageText = MessageText.points();
+    const inlineMarkup = InlineKeyboardReplyMarkup.points()
+
+
+    return {
+      async pointList(user: User, shiftSize: ShiftSizeType) {
+        const text = messageText.pointList()
+        const reply_markup = await inlineMarkup.pointList(user, shiftSize)
+        return {text, reply_markup}
+      },
+
+      async pointIsBusy(point: Point, shiftSelectorType: ShiftSelectorType) {
+        const text = await messageText.pointIsBusy(point, shiftSelectorType);
+        const reply_markup = inlineMarkup.pointIsBusy(point)
+        return {text, reply_markup}
+      }
+    }
+  }
+
+  static notifications(){
+    const messageText = MessageText.notifications()
+    return {
+      pointLost(user: User, point: string){
+        const text = messageText.pointLost(user, point)
+        const reply_markup = undefined
+        return {text, reply_markup}
+      }
+    }
+  }
+
+  static async presets(user: User, selectedPoint: Point){
+    const text = MessageText.presets(selectedPoint)
+    const reply_markup = await InlineKeyboardReplyMarkup.presets(user, selectedPoint)
+    return {text, reply_markup}
   }
 
 }

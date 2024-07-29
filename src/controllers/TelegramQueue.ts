@@ -1,4 +1,4 @@
-import { sleep } from "./sleep";
+import { sleep } from "../utilities/sleep";
 
 export type TelegramQueueOptions = {priority?: number, delay?: number}
 
@@ -23,10 +23,14 @@ class TelegramQueue {
   }
 
   async add(handler: () => Promise<any | void>, options: TelegramQueueOptions = {}){
-    const {priority = 1, delay = 0} = options;
+    const {priority = 5, delay = 0} = options;
     if (! this.queue[priority]){
       this.queue[priority] = new Array()
-      this.queueKeys.includes(priority) || this.queueKeys.push(priority) && this.queueKeys.sort((a, b) => a - b);
+
+      if (! this.queueKeys.includes(priority)){
+        this.queueKeys.push(priority)
+        this.queueKeys.sort((a, b) => Number(a) - Number(b));
+      }
     }
     
     this.queue[priority].push(handler)

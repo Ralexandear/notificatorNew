@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api"
-import PointsController from "../../../controllers/PointsController"
+import PointsController from "../../../controllers/databaseControllers/PointsController"
 import { ShiftType } from "../../../types/ShiftType"
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor"
 import { googleMapsGeocoder } from "../../../utilities/googleMapsGeocoder"
@@ -128,7 +128,7 @@ class MessageDestructor {
 
 
 
-export default async function Notificator( message: TelegramBot.Message ){
+export default async function NotificatorHandler( message: TelegramBot.Message ){
   try{
     console.log('Notificator, messageId', message.message_id);
     const messageData = extractDataFromMessage(message);

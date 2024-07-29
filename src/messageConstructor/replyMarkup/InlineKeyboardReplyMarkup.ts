@@ -1,8 +1,14 @@
 import TelegramBot from "node-telegram-bot-api";
 import Buttons from "./Buttons";
-import { User } from "../../database/models";
-import PointsController from "../../controllers/PointsController";
+import { Point, Preset, User } from "../../database/models";
+import PointsController from "../../controllers/databaseControllers/PointsController";
 import { Delimiter, Icons } from "../../config";
+import { SelectPointsTempType } from "../../types/TempType";
+import { ShiftType } from "../../types/ShiftType";
+import { PresetActionType } from "../../types/PresetActionType";
+import PresetController from "../../controllers/databaseControllers/PresetController";
+import { ShiftSizeType } from "../../types/ShiftSizeType";
+import { ShiftEnum } from "../../enums/ShiftEnum";
 
 
 
@@ -64,11 +70,12 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
       },
 
       async presets(user: User) {
-        if (! user.presetsIsActive) return new InlineKeyboardReplyMarkup(1, Buttons.activate());
+        if (! user.presetIsActive) return new InlineKeyboardReplyMarkup(1, Buttons.activate());
         
         const points = await PointsController.getAll()
         const icon = Icons.redPin
-        const buttons = (points.map(point => Buttons.emptyButton([icon, point.point].join(' '), [icon, point.id].join( Delimiter ))))
+        const presetAction: PresetActionType = 'selectPoint'
+        const buttons = (points.map(point => Buttons.selectButton(icon + ' ' + point.point, presetAction, point.id)))
         const reply_markup = new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons);
         reply_markup.inline_keyboard.unshift( [ Buttons.deactivate() ] )
         
@@ -77,8 +84,82 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
     }
   }
 
+  static points() {
+    return {
+      async pointList ( user: User, shiftSize: ShiftSizeType ) {
+        const points = await PointsController.getAll()      
+        // const replyMarkup = new InlineKeyboardReplyMarkup(maxRowWidth);
+        
+        // const keyboard = replyMarkup.inline_keyboard;
+    
+        if (shiftSize === 'full') {
+          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + '.2', [icon, point.id, ShiftEnum[ shiftSize ] ].join(Delimiter))
+          const buttons = points.map(point => {
+            const icon = (() => {
+              const pointIsEmpty = ! Boolean(point.morning || point.evening)
+              if (pointIsEmpty) {
+                return Icons.yellowDot;
+              } else if (user.id === point.morning && point.morning === point.evening) {
+                return Icons.greenDot
+              }
+              return  Icons.redDot
+            })();
+            
+            return getButton(icon, point);
+          });
+
+          const buttonsToAdd = maxRowWidth - buttons.length % maxRowWidth;
+          if (buttonsToAdd !== maxRowWidth) buttons.push( ...new Array(buttonsToAdd).fill(Buttons.emptyButton()) )
+    
+          return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons);
+        } 
+
+        const buttons =  (['morning', 'evening'] as ShiftType[]).map((shiftType, el) => {
+          const postfix = el ? '.1' : ''
+          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + postfix, [icon, point.id, ShiftEnum[ shiftType ]].join(Delimiter))
+    
+          const buttons = points.map(point => {
+            const icon = (() => {
+              const courierId = point.getUserId(shiftType)
+              
+              if (courierId === user.id) return Icons.greenDot
+              else if (courierId) return Icons.redDot
+              return Icons.yellowDot
+            })();
+            return getButton(icon, point)
+          })
+    
+          const buttonsToAdd = maxRowWidth - buttons.length % maxRowWidth;
+          if (buttonsToAdd !== maxRowWidth) buttons.push( ...new Array(buttonsToAdd).fill(Buttons.emptyButton()) )
+
+          return buttons
+        });
+
+        buttons.splice(1, 0, new Array(maxRowWidth).fill(Buttons.emptyButton()));
+    
+        return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons.flat())
+      },
+
+      pointIsBusy( point: Point ) {
+        return new InlineKeyboardReplyMarkup(1, Buttons.setForce( point.id ))
+      }
 
 
+    }
+  }
+
+  static async presets(user: User, selectedPoint: Point){
+    const [points, preset] = await Promise.all([PointsController.getAll(), PresetController.getPresetForPoint(user.id, selectedPoint.id)])
+    const pointsToListen = new Set(preset?.pointsToListen || []);
+    const presetAction: PresetActionType = 'selectPreset'; 
+    const buttons = points.map(point => {
+      if ( point.id === selectedPoint.id ) return Buttons.backButton(Icons.redDot + ' ' + point.point, presetAction, point.id);
+      if ( pointsToListen.has( point.id )) return Buttons.deactivate(Icons.greenDot + ' ' + point.point, presetAction, point.id)
+      return Buttons.activate(Icons.yellowDot + ' ' + point.point, presetAction, point.id);
+    })
+    
+    return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons);
+  }
 
 }
 

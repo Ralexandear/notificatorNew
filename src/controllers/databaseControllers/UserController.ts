@@ -1,12 +1,13 @@
 import { Json } from "sequelize/types/utils";
-import { User } from "../database/models";
-import RedisController from "./RedisController";
+import { User } from "../../database/models";
+import RedisController from "../RedisController";
 import { Op } from "sequelize";
+import { UserStatusEnum } from "../../enums/UserStatusEnum";
 
 
 class UserControllerClass {
-  create( telegramId: number | string, ){
-    return User.create({ telegramId: telegramId.toString() })
+  create( telegramId: number | string, fullName: string, username: string){
+    return User.create({ telegramId: telegramId.toString(), _fullName: fullName, _username: username, status: UserStatusEnum.active})
   }
 
   async find( telegramId: number | string ){
@@ -14,8 +15,7 @@ class UserControllerClass {
     if ( userdata ) return User.build(JSON.parse( userdata ), { isNewRecord: false });
     
     const user = await User.findOne( { where: { telegramId: telegramId.toString() }} ) 
-    if (! user) throw new Error(`User with telegramId ${telegramId} not found!`)      
-    return user.saveToRedis()
+    if (user) user.saveToRedis() 
   }
 
   async getById( id: number ){

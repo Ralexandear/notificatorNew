@@ -2,6 +2,7 @@ import TelegramBot from "node-telegram-bot-api"
 import { User } from "../../../database/models"
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
+import Bot from "../../..";
 
 
 export async function MenuHandler (user: User, message: TelegramBot.Message){
@@ -49,6 +50,7 @@ export async function MenuHandler (user: User, message: TelegramBot.Message){
   else return
 
   user.deletePreviousInlineMessage()
+  //@ts-ignore
   user.sendMessage(text, {reply_markup}, true)
 }
 

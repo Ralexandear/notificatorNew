@@ -38,8 +38,19 @@ export default class Buttons {
   }
 
   static emptyButton(text: string = ' ', callback_data: string = ' '){
-    return {text, callback_data}
+    return new Buttons(text, { callback_data })
   }
+
+  static selectButton(text: string = '', ...params: (string | number)[]){
+    const callback_data = ['slct', ...params].join(Delimiter)
+    return new Buttons(text, { callback_data })
+  }
+
+  static backButton(text = '↪️ Назад', ...params: (string | number)[]) {
+    const callback_data = ['bck', ...params].join(Delimiter)
+    return new Buttons(text, { callback_data })
+  }
+
 
   static linkToMessage(chatId: number | string, messageId: number | string){
     const text = 'К сообщению 📩'
@@ -53,9 +64,9 @@ export default class Buttons {
     return new Buttons(text, {url})
   }
 
-  static acceptOrder( orderId: number | string ){
+  static acceptOrder( ...orderId: (number | string)[] ){
     const text = '✅ Взять в работу'
-    const callback_data = ['acceptOrder', orderId].join(Delimiter)
+    const callback_data = ['acceptOrder', ...orderId].join(Delimiter)
     return new Buttons(text, {callback_data})
   }
 
@@ -89,16 +100,20 @@ export default class Buttons {
     return new Buttons(text, {callback_data})
   }
 
-  static activate () {
-    const text = '🔊 Активировать'
-    const callback_data = 'activate'
+  static activate (text= '🔊 Активировать', ...params: (string | number)[]) {
+    const callback_data = ['actvt', ...params].join(Delimiter)
     return {text, callback_data}
   }
 
-  static deactivate () {
-    const text = '🔇 Выключить'
-    const callback_data = 'deactivate'
+  static deactivate (text = '🔇 Выключить', ...params: (string | number)[]) {
+    const callback_data = ['dctvt', ...params].join(Delimiter)
     return {text, callback_data}
+  }
+
+  static setForce(...pointId: number[]){
+    const text = '🗿 Принудительно перезаписать'
+    const reply_markup = ['setForce', ...pointId].join(Delimiter)
+    return {text, reply_markup}
   }
 
 

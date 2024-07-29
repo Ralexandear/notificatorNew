@@ -1,34 +1,64 @@
-async function callbackHandler(){
-    const
-      id = callback_query.message.chat.id.toString(),
-      messageId = callback_query.message.message_id,
-      queryId = callback_query.id,
-      [botCommand, data] = callback_query.data.split('/');
+import TelegramBot from "node-telegram-bot-api";
+import { botInitializationPromise } from "../..";
+import UserController from "../../controllers/databaseControllers/UserController";
+import splitCommand from "../../utilities/splitCommand";
+import Buttons from "../../messageConstructor/replyMarkup/Buttons";
+import { Log } from "../../utilities/Log";
+import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
+import { AcceptOrderHandler } from "./modules/AcceptOrderHandler";
+import { SelectPointsHandler } from "./modules/SelectPointsHandler";
+import PresetHandler from "./modules/PresetHandler";
+import { User } from "../../database/models";
+
+export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery) {
+  try{
+    await botInitializationPromise;
+    Log('new callback', callback)
+
+    const telegramId = callback.from.id.toString()
+    const user = await UserController.find( telegramId );
+
+    if (! user) return
     
-    const user = allUsers.getData(id)
-    console.log('Пользователь:', user.name, 'id', id, 'комманда:', botCommand)
-    
-    try{
-      switch (botCommand){
-        case 'cancelAwait': return delete user.cancelAwait;
-        case 'acceptOrder': return mods.acceptOrder({id, user, bot, botCommand, messageId, queryId, data, callback_query})
-      }
-    
-      switch (user.program){  
-        case 'selectPoints':
-          return await mods.SelectPoints({id, user, bot, botCommand, messageId, queryId});
-        
-        case 'showArchive':
-          return showArchive(now)
-        
-        case 'presets':
-          if (callback_query) await mods.Presets({id, callback_query, user, bot, botCommand, messageId, queryId})
-          return 
-      }
-    } catch (e) {
-      console.error(e, 'CallbackHandlerError ' + user?.id ?? '')
-    } finally {
-      console.log('Saving userdata')
-      user?.save()
+    const username = callback.from.username;
+    if (! username){
+      const {text, reply_markup} = MessageConstructor.errors().usernameIsMissing();
+      user.sendMessage(text, {reply_markup})
+      Log('Username is missing, callbackId', callback.id)
+      return
     }
+    
+    user.checkUsername( username );
+    if (! callback.data) return
+
+    const {action} = splitCommand( callback.data )
+    console.log(CallbackQueryHandler.name, 'Пользователь:', user.name, 'id', user.id, 'комманда:', action)
+    
+    
+    if (action === Buttons.acceptOrder().callback_data) {
+      AcceptOrderHandler(user, callback)
+      return
+    }
+
+    user.answerCallbackQuery(callback.id, {cache_time: 2});
+
+    // if (user.messageId !== callback.message?.message_id) {
+    //   Log('Inline message id !== user.messageId, work stopped')
+    //   return
+    // }
+
+    let handler: (user: User, callback: TelegramBot.CallbackQuery) => Promise<any>;
+    
+    if (user.program === 'selectPoints') handler = SelectPointsHandler
+    else if (user.program === 'presets') handler = PresetHandler
+    else {
+      Log('Unhandled user program:', user.program)
+      return
+    }
+    
+    Log('Selected callback handler', handler.name, 'callbackId:', callback.id);
+    await handler(user, callback)
+  } catch (e) {
+    Log('Catched error', e)
   }
+}
