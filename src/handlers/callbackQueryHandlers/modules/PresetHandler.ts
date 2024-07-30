@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { User } from "../../../database/models";
+import { Preset, User } from "../../../database/models";
 import splitCommand from "../../../utilities/splitCommand";
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
@@ -7,6 +7,7 @@ import { PresetActionType } from "../../../types/PresetActionType";
 import { Log } from "../../../utilities/Log";
 import BotError from "../../../Errors/BotError";
 import PointsController from "../../../controllers/databaseControllers/PointsController";
+import { log } from "../../..";
 
 
 
@@ -36,6 +37,7 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
 
   const {action, params} = splitCommand(callback.data);
   const [presetAction, pointId] = params as [PresetActionType | undefined, string | undefined]
+  var preset: undefined | Preset
     
   if (presetAction === undefined) { //отвечает за активацию и деактивацию пресета глобально
     if (action === Buttons.activate().callback_data) {
@@ -57,7 +59,7 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
       openPresetMenu(user)
       return
     }
-
+    
     const selectedPointId = (() => {
       const inlineKeyboard = callback.message?.reply_markup?.inline_keyboard;
       if (! inlineKeyboard) throw new ReferenceError('inlineKeyboard is missing, but required!')
@@ -68,19 +70,19 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
           if (button.callback_data === undefined) continue;
           
           const {action, params} = splitCommand(button.callback_data);
-          if (backButton.callback_data === action) return params[0]
+          if (backButton.callback_data === action) return params[1]
         }
       }
       throw new Error('Selected point not found in reply markup!')
     })();
-
+    log(selectedPointId)
     var selectedPoint = await getSelectedPoint(selectedPointId);
-    const preset = await user.preset().getForPoint(selectedPoint.id);
+    preset = await user.preset().getForPoint(selectedPoint.id);
 
     if (action === Buttons.activate().callback_data) {
-      preset.addPointsToListen(selectedPoint.id)
+      await preset.addPointsToListen(pointId)
     } else if (action === Buttons.deactivate().callback_data){
-      preset.removePointsToListen(selectedPoint.id)
+      await preset.removePointsToListen(pointId)
     } else {
       Log('Unhandled request, unsupported action', action as string);
       return
@@ -90,7 +92,7 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
     return
   }
 
-  const {text, reply_markup} = await MessageConstructor.presets(user, selectedPoint);
+  const {text, reply_markup} = await MessageConstructor.presets(user, selectedPoint, preset);
   user.editMessageText(text, {reply_markup})
   return
 }

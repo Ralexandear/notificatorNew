@@ -110,10 +110,10 @@ export default class Buttons {
     return {text, callback_data}
   }
 
-  static setForce(...pointId: number[]){
+  static setForce(...params: (string | number)[]){
     const text = '🗿 Принудительно перезаписать'
-    const reply_markup = ['setForce', ...pointId].join(Delimiter)
-    return {text, reply_markup}
+    const callback_data = ['setForce', ...params].join(Delimiter)
+    return {text, callback_data}
   }
 
 

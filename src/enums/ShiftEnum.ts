@@ -1,5 +1,5 @@
 export enum ShiftEnum {
-  morning = 'mrng',
-  evening = 'evng',
+  morning = 'morning',
+  evening = 'evening',
   full = 'full'
 }

@@ -4,7 +4,7 @@ import { Point, Preset, User } from "../../database/models";
 import PointsController from "../../controllers/databaseControllers/PointsController";
 import { Delimiter, Icons } from "../../config";
 import { SelectPointsTempType } from "../../types/TempType";
-import { ShiftType } from "../../types/ShiftType";
+import { ShiftSelectorType, ShiftType } from "../../types/ShiftType";
 import { PresetActionType } from "../../types/PresetActionType";
 import PresetController from "../../controllers/databaseControllers/PresetController";
 import { ShiftSizeType } from "../../types/ShiftSizeType";
@@ -95,14 +95,19 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
         if (shiftSize === 'full') {
           const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + '.2', [icon, point.id, ShiftEnum[ shiftSize ] ].join(Delimiter))
           const buttons = points.map(point => {
+            const shiftTypes = ['morning', 'evening'] as ShiftType[];
+
             const icon = (() => {
-              const pointIsEmpty = ! Boolean(point.morning || point.evening)
-              if (pointIsEmpty) {
-                return Icons.yellowDot;
-              } else if (user.id === point.morning && point.morning === point.evening) {
-                return Icons.greenDot
-              }
-              return  Icons.redDot
+              //if point is taken by user
+              if (shiftTypes.every(shiftType => point.getUserId(shiftType) === user.id)) return Icons.greenDot
+
+              const pointIsVailable = (['morning', 'evening'] as ShiftType[]).every(shiftType => {
+                const userId = point.getUserId(shiftType);
+                return userId === null || userId === user.id
+              })
+              
+              if (pointIsVailable) return Icons.yellowDot;
+              return  Icons.redDot;
             })();
             
             return getButton(icon, point);
@@ -140,20 +145,27 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
         return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons.flat())
       },
 
-      pointIsBusy( point: Point ) {
-        return new InlineKeyboardReplyMarkup(1, Buttons.setForce( point.id ))
+      pointIsBusy( point: Point, shiftType: ShiftSelectorType ) {
+        return new InlineKeyboardReplyMarkup(1, Buttons.setForce( point.id, shiftType ))
       }
 
 
     }
   }
 
-  static async presets(user: User, selectedPoint: Point){
-    const [points, preset] = await Promise.all([PointsController.getAll(), PresetController.getPresetForPoint(user.id, selectedPoint.id)])
+  static async presets(user: User, selectedPointOrPreset: Point | Preset){
+    
+    const [points, preset, selectedPointId] = await ( async () => {
+      const pointsPromise = PointsController.getAll()
+      if (selectedPointOrPreset instanceof Preset) return pointsPromise.then(points => [points, selectedPointOrPreset, selectedPointOrPreset.pointId]);
+      return Promise.all([pointsPromise, PresetController.getPresetForPoint(user.id, selectedPointOrPreset.id)]).then(result => [...result, selectedPointOrPreset.id])
+    })() as [Point[], Preset, number];
+    
+    
     const pointsToListen = new Set(preset?.pointsToListen || []);
     const presetAction: PresetActionType = 'selectPreset'; 
     const buttons = points.map(point => {
-      if ( point.id === selectedPoint.id ) return Buttons.backButton(Icons.redDot + ' ' + point.point, presetAction, point.id);
+      if ( point.id === selectedPointId ) return Buttons.backButton(Icons.redPin + ' ' + point.point, presetAction, point.id);
       if ( pointsToListen.has( point.id )) return Buttons.deactivate(Icons.greenDot + ' ' + point.point, presetAction, point.id)
       return Buttons.activate(Icons.yellowDot + ' ' + point.point, presetAction, point.id);
     })

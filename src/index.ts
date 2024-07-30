@@ -7,6 +7,7 @@ import UserController from './controllers/databaseControllers/UserController';
 import { CallbackQueryHandler } from './handlers/callbackQueryHandlers/CallbackQueryHandler';
 
 const botToken = process.env.BOT_TOKEN;
+export const log = console.log
 if (! botToken) throw new ReferenceError('Bot token is missing in env')
 
 const Bot = new TelegramBot( botToken, { polling: true});

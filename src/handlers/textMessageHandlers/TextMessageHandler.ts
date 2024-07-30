@@ -34,7 +34,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
         {isNewRecord: false}
       )
       
-      if (messageText === '4d348b') {
+      if (messageText === 'veryFunny') {
         if (! notUser.username) {
           const {text} = MessageConstructor.errors().usernameIsMissing()
           notUser.sendMessage(text)
@@ -58,7 +58,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
     }
 
     console.log('Пользователь:', user.name, 'id', user.id, 'Сообщение:', messageText)
- 
+
     if (user.status !== UserStatusEnum.active){
       const {text, reply_markup} = MessageConstructor.errors().authorizationError();
       user.sendMessage(text, {reply_markup})

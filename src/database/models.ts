@@ -3,7 +3,7 @@ import * as Interfaces from "../interfaces/databaseInterfaces"
 import { Model } from "sequelize";
 import { ProgramsType } from "../types/Programs";
 import TelegramBot from "node-telegram-bot-api";
-import { Bot } from "..";
+import { Bot, log } from "..";
 import TelegramQueue, { TelegramQueueOptions } from "../controllers/TelegramQueue";
 import { ListenersType } from "../types/ListenersType";
 import { ShiftSelectorType, ShiftType } from "../types/ShiftType";
@@ -44,7 +44,7 @@ export class User extends Model<Interfaces.UserAttributes, Interfaces.UserCreati
     return this
   }
 
-  private saveIt(){
+  saveIt(){
     if (this._savePromise) return this;
 
     this._savePromise = Promise.all([
@@ -94,6 +94,7 @@ export class User extends Model<Interfaces.UserAttributes, Interfaces.UserCreati
   private setMessageId(messageId: number | null) {
     this.messageId = messageId;
     this.saveIt()
+    return this
   }
 
   openMenu(messageText?: string){
@@ -150,6 +151,7 @@ export class User extends Model<Interfaces.UserAttributes, Interfaces.UserCreati
   editMessageText(text: string, options: TelegramBot.EditMessageTextOptions = {}) {
     options.message_id ??= this.messageId || undefined;
     options.chat_id ??= this.telegramId
+    options.disable_web_page_preview ??= true
     options.parse_mode ??= 'HTML'
     
     const job = () => Bot.editMessageText(text, options);
@@ -178,13 +180,13 @@ export class User extends Model<Interfaces.UserAttributes, Interfaces.UserCreati
     return {
       activate(){
         user.presetIsActive = true;
-        user.saveIt()
+        // user.saveIt()
         return user
       },
 
       deactivate(){
         user.presetIsActive = false
-        user.saveIt()
+        // user.saveIt()
         return user
       },
 
@@ -217,8 +219,7 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
   }
 
   async getUser (shiftType: ShiftType) {
-    //@ts-ignore
-    const userId = this.getUserId()
+    const userId = this.getUserId( shiftType )
     if (userId) return await UserController.getById(userId)
   }
 
@@ -237,6 +238,7 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
 
     shifts.forEach(e => {
       Log(user.name, 'снялся с точки', this.id, e)
+      console.log(e)
       this[e] = this[e] === user.id ? null : this[e]
     })
    
@@ -360,15 +362,8 @@ export class Preset extends Model<Interfaces.PresetAttributes, Interfaces.Preset
   private _savePromise?: Promise<any> | null
   private _changed!: Set<keyof Preset> //sequelize key
 
-  private saveIt(){
-    if (this._savePromise) return this;
 
-    this._savePromise = this.save().then(() => this._savePromise = null);
-    
-    return this
-  }
-
-  addPointsToListen(...points: (number | string)[]){
+  async addPointsToListen(...points: (number | string)[]){
     const intPoints = points.map(e => {
       if (typeof e === 'string') e = +e
       if (! isNaN(e)) return e;
@@ -378,23 +373,22 @@ export class Preset extends Model<Interfaces.PresetAttributes, Interfaces.Preset
     intPoints.forEach(e => ! this.pointsToListen.includes(e) && this.pointsToListen.push(e));
     
     this._changed.add('pointsToListen')
-    this.saveIt();
+    await this.save()
 
     return this
   }
 
 
-  removePointsToListen(...points: (number | string)[]){
+  async removePointsToListen(...points: (number | string)[]){
     const intPoints = points.map(e => {
       if (typeof e === 'string') e = +e
       if (! isNaN(e)) return e;
       throw BotError.cannotParseInt()
     })
-    
-    intPoints.forEach(e => this.pointsToListen = this.pointsToListen.filter(x => x === e));
+    intPoints.forEach(e => this.pointsToListen = this.pointsToListen.filter(x => x !== e));
     
     this._changed.add('pointsToListen')
-    this.saveIt();
+    await this.save()
 
     return this
   }

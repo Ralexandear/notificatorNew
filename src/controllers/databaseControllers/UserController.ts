@@ -15,7 +15,7 @@ class UserControllerClass {
     if ( userdata ) return User.build(JSON.parse( userdata ), { isNewRecord: false });
     
     const user = await User.findOne( { where: { telegramId: telegramId.toString() }} ) 
-    if (user) user.saveToRedis() 
+    if (user) return user.saveToRedis()
   }
 
   async getById( id: number ){

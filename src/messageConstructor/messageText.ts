@@ -1,5 +1,6 @@
 // import { User } from "../database/models";
 
+import PointsController from "../controllers/databaseControllers/PointsController"
 import { Point, User } from "../database/models"
 import { PostfixEnum } from "../enums/PostfixEnum"
 import { ShiftSelectorType, ShiftType } from "../types/ShiftType"
@@ -30,6 +31,32 @@ export class MessageTextClass {
 
       selectPoints() {
         return 'Какие смены желаете выбрать?'
+      },
+
+      async status( user: User ){
+        const points = await PointsController.getAll();
+        const currentPoints: string[] = [];
+        const shiftTypes: ShiftType[] = ['morning', 'evening']
+
+        for (const e of points) {
+          const result = shiftTypes.reduce((res, shiftType) => {
+            const userId = e.getUserId( shiftType );
+            if (userId !== user.id) return res
+
+            if (res) return e.point + PostfixEnum.full; // if res, means first half is checked
+            if (shiftType === 'morning') return e.point + PostfixEnum.morning
+            if (shiftType === 'evening') return e.point + PostfixEnum.evening
+          }, undefined as string | undefined);
+
+          if (result) currentPoints.push(result);
+        }
+
+        return [
+          getDateString(),
+          'Точки на сегодня:',
+          '',
+          (currentPoints.join(', ') || 'Нет выбранных точек') + ';' 
+        ].join('\n')
       }
 
       
@@ -75,7 +102,7 @@ export class MessageTextClass {
       async pointIsBusy( point: Point, shiftTypeToSelect: ShiftSelectorType ) {
         const textArray = [getDateString(), '']
 
-        const shiftTypes: ShiftType[] = shiftTypeToSelect === 'full' ? ['evening', 'morning'] : [ shiftTypeToSelect ]
+        const shiftTypes: ShiftType[] = shiftTypeToSelect === 'full' ? ['morning', 'evening'] : [ shiftTypeToSelect ]
         
         for (const shiftType of shiftTypes){
           const user = await point.getUser( shiftType );

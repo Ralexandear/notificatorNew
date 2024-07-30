@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { Point, User } from "../database/models"
+import { Point, Preset, User } from "../database/models"
 import MessageText from "./messageText"
 import { InlineKeyboardReplyMarkup } from "./replyMarkup/InlineKeyboardReplyMarkup";
 import ReplyKeyboardMarkup from "./replyMarkup/ReplyKeyboardMarkup";
@@ -44,6 +44,13 @@ export class MessageConstructor {
         const text = messageText.presets()
         const reply_markup = await replyMarkup.presets(user)
         return {text, reply_markup}
+      },
+
+      async status(user: User) {
+        const text = await MessageText.menu().status(user);
+        const reply_markup = undefined
+        return {text, reply_markup}
+
       }
       
     }
@@ -101,7 +108,7 @@ export class MessageConstructor {
 
       async pointIsBusy(point: Point, shiftSelectorType: ShiftSelectorType) {
         const text = await messageText.pointIsBusy(point, shiftSelectorType);
-        const reply_markup = inlineMarkup.pointIsBusy(point)
+        const reply_markup = inlineMarkup.pointIsBusy(point, shiftSelectorType)
         return {text, reply_markup}
       }
     }
@@ -118,9 +125,9 @@ export class MessageConstructor {
     }
   }
 
-  static async presets(user: User, selectedPoint: Point){
+  static async presets(user: User, selectedPoint: Point, preset?: Preset){
     const text = MessageText.presets(selectedPoint)
-    const reply_markup = await InlineKeyboardReplyMarkup.presets(user, selectedPoint)
+    const reply_markup = await InlineKeyboardReplyMarkup.presets(user, preset || selectedPoint)
     return {text, reply_markup}
   }
 
