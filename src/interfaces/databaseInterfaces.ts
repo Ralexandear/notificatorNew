@@ -2,6 +2,7 @@ import { Optional } from "sequelize";
 import { ProgramsType } from "../types/Programs";
 import { UserStatusEnum } from "../enums/UserStatusEnum";
 import { ListenersType } from "../types/ListenersType";
+import { ShiftType } from "../types/ShiftType";
 
 export interface UserAttributes {
   id: number;
@@ -22,10 +23,10 @@ export interface PointAttributes {
   id: number;
   morning: number | null;
   evening: number | null;
-  listeners: ListenersType
+  _listeners: ListenersType
 }
 
-export interface PointCreationAttributes extends Optional<PointAttributes, 'morning' | 'evening' | 'listeners'> {}
+export interface PointCreationAttributes extends Optional<PointAttributes, 'morning' | 'evening' | '_listeners'> {}
 
 
 export interface TempAttributes {
@@ -46,5 +47,10 @@ export interface PresetAttributes {
 export interface PresetCreationAttributes extends Optional<PresetAttributes, 'id'> {}
 
 
+// export interface ListenerInterface {
+//   userId: number;
+//   pointId: number;
+//   shiftType: ShiftType
+// }
 
 

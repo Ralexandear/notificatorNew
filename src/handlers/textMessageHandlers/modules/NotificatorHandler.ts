@@ -142,7 +142,7 @@ export default async function NotificatorHandler( message: TelegramBot.Message )
     const point = await PointsController.find( pointNumber );
 
     const [courier, listeners] = await Promise.all(
-      [point.getUser(shiftType as ShiftType), point.getListeners(shiftType as ShiftType)]
+      [point.getUser(shiftType as ShiftType), point.listeners(shiftType as ShiftType).get()]
     );
 
     const pointDesc = `К${pointNumber}, тип ${shiftType}, messageId: ${message.message_id}`;

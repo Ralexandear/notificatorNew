@@ -45,7 +45,7 @@ Models.Point.init({
   id: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
   morning: { type: DataTypes.INTEGER },
   evening: { type: DataTypes.INTEGER },
-  listeners: { type: DataTypes.JSON, defaultValue: ListenersDefaultValue, allowNull: false }
+  _listeners: { type: DataTypes.JSON, defaultValue: ListenersDefaultValue, allowNull: false }
 }, 
 {
   sequelize: Postgres,

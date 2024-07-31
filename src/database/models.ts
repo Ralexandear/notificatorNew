@@ -16,6 +16,7 @@ import { Log } from "../utilities/Log";
 import PresetController from "../controllers/databaseControllers/PresetController";
 import BotError from "../Errors/BotError";
 import { UserStatusEnum } from "../enums/UserStatusEnum";
+import PointsController from "../controllers/databaseControllers/PointsController";
 
 
 
@@ -210,8 +211,10 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
   readonly id!: number;
   morning!: number | null;
   evening!: number | null;
-  readonly listeners!: ListenersType;
+  readonly _listeners!: ListenersType;
   private _savePromise?: Promise<any> | null
+  private _changed!: Set<keyof Point> //sequelize key
+
 
   private saveIt(){
     if (this._savePromise) return this._savePromise;
@@ -246,10 +249,6 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
     return true
   }
 
-  async getListeners (shiftType: ShiftType) {
-    const userIds = this.listeners[ shiftType ]
-    if (userIds.length) return await UserController.getByIds( ...userIds )
-  }
 
   get point () {
     return 'К' + this.id
@@ -261,23 +260,8 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
         const {text, reply_markup} = MessageConstructor.notifications().pointLost(user, this.point + postfix)
         user.sendMessage(text, {reply_markup})
       });
-
     
-    //  if ( ! (['morning', 'evening'] as ShiftType[]).includes(shiftType)) {
-    //     const courierId = this.getUserId(shiftType)
-        
-    //     if ( courierId ) {
-    //       const postfix = PostfixEnum[ shiftType ]
-    //       notifyUser(courierId, postfix);
-    //     }
-    //     this.setUser(shiftType, user.id)
-    //   } else {
-    //     throw new TypeError('Unexpected shift type recieved!');
-    //   }
-
-    //   return this.saveIt()
-    // }
-
+    const shiftsArr = ['morning', 'evening'] as ShiftType[];
 
     if (shiftType === 'full') {
       const shifts = [this.morning, this.evening]
@@ -302,22 +286,63 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
       }
       else if (shifts.some(courierId => courierId && courierId !== user.id)) return false
 
-      await this.setUser('morning', user).setUser('evening', user).saveIt()
+      shiftsArr.forEach(e => this.setUser(e, user))
+      const preset = await user.preset().getForPoint(this.id);
+      preset.enable(shiftType);
+
+      await this.save();
       return true;
-    } else if (! (['morning', 'evening'] as ShiftType[]).includes(shiftType)) {
-      throw new TypeError(`Unexpected type of shiftType param, 'morning' or 'evening' expected, but recieved '${shiftType}'`)
     }
 
     const courierId = this.getUserId( shiftType );
     
-    if (courierId) it: {
+    if (courierId) {
       if (! setForce) return false;
       const postfix = PostfixEnum[ shiftType ];
-      notifyUser(courierId, shiftType);
+      notifyUser(courierId, postfix);
     }
     
     await this.setUser(shiftType, user).saveIt();
     return true
+  }
+
+  listeners (shiftType: ShiftSelectorType) {
+    const shifts: ShiftType[] = shiftType === 'full' ? ['morning', 'evening'] : [ shiftType ];
+    const point = this;
+    let isChanged = false;
+    
+    const save = async () => {
+      if (! isChanged) return this
+      point._changed.add('listeners');
+      return point.save();
+    }
+
+    return {
+      async enable (userId: number) {
+        shifts.forEach(e => {
+          const listeners = point._listeners[e];
+          if (listeners.includes(userId)) return;
+          isChanged = true;
+          listeners.push(userId);
+        })
+        return save();
+      }, 
+
+      async disable (userId: number) {
+        shifts.forEach( e => point._listeners[e] = point._listeners[e].filter(e => e === userId && (isChanged = true)) );
+        return save();
+      },
+
+      async get () {
+        if (shiftType === 'full') {
+          log('unexpected shiftType')
+          return
+        }
+
+        const userIds = point._listeners[ shiftType ]
+        if (userIds.length) return await UserController.getByIds( ...userIds )
+      }
+    }
   }
 }
 
@@ -362,8 +387,8 @@ export class Preset extends Model<Interfaces.PresetAttributes, Interfaces.Preset
   private _changed!: Set<keyof Preset> //sequelize key
 
 
-  async addPointsToListen(...points: (number | string)[]){
-    const intPoints = points.map(e => {
+  async addPointsToListen(...pointIds: (number | string)[]){
+    const intPoints = pointIds.map(e => {
       if (typeof e === 'string') e = +e
       if (! isNaN(e)) return e;
       throw BotError.cannotParseInt()
@@ -371,6 +396,12 @@ export class Preset extends Model<Interfaces.PresetAttributes, Interfaces.Preset
     
     intPoints.forEach(e => ! this.pointsToListen.includes(e) && this.pointsToListen.push(e));
     
+    const point = await PointsController.find(this.pointId);
+    const shiftsArr = ['morning', 'evening'] as ShiftType[];
+    const shiftType: ShiftSelectorType | null = shiftsArr.every(e => point.getUserId(e)) && 'full' || shiftsArr.find(e => point.getUserId(e)) || null
+    
+    if (shiftType) await this.enable(shiftType);
+
     this._changed.add('pointsToListen')
     await this.save()
 
@@ -378,17 +409,45 @@ export class Preset extends Model<Interfaces.PresetAttributes, Interfaces.Preset
   }
 
 
-  async removePointsToListen(...points: (number | string)[]){
-    const intPoints = points.map(e => {
+  async removePointsToListen(...pointIds: (number | string)[]){
+    const intPoints = pointIds.map(e => {
       if (typeof e === 'string') e = +e
       if (! isNaN(e)) return e;
       throw BotError.cannotParseInt()
     })
     intPoints.forEach(e => this.pointsToListen = this.pointsToListen.filter(x => x !== e));
     
+    const point = await PointsController.find(this.pointId);
+    const shiftsArr = ['morning', 'evening'] as ShiftType[];
+    const shiftType: ShiftSelectorType | null = shiftsArr.every(e => point.getUserId(e)) && 'full' || shiftsArr.find(e => point.getUserId(e)) || null
+
+    if (shiftType) await this.disable(shiftType);
+
     this._changed.add('pointsToListen')
     await this.save()
 
     return this
   }
+
+
+  async enable(shiftType: ShiftSelectorType) {
+    if (! this.pointsToListen.length) {
+      log(`Can't enable presets for userId: ${this.userId}, pointId: ${this.pointId}, Points to listen not found!`)
+      return
+    }
+
+    const points = await PointsController.getPoints(...this.pointsToListen);
+    const promises = points.map(e => e.listeners(shiftType).enable(this.userId))
+    await Promise.all(promises);
+    return this
+  }
+
+  async disable(shiftType: ShiftSelectorType) {
+    const points = await PointsController.getAll();
+    const promises = points.map(e => e.listeners(shiftType).disable(this.userId))
+    await Promise.all(promises);
+    return this
+  }
+
+
 }
