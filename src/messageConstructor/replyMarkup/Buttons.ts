@@ -1,5 +1,4 @@
-import { Delimiter } from "../../utilities/readConfig";
-
+import Config from "../../config";
 
 export default class Buttons {
   text: string;
@@ -42,12 +41,12 @@ export default class Buttons {
   }
 
   static selectButton(text: string = '', ...params: (string | number)[]){
-    const callback_data = ['slct', ...params].join(Delimiter)
+    const callback_data = ['slct', ...params].join(Config.delimiter)
     return new Buttons(text, { callback_data })
   }
 
   static backButton(text = '↪️ Назад', ...params: (string | number)[]) {
-    const callback_data = ['bck', ...params].join(Delimiter)
+    const callback_data = ['bck', ...params].join(Config.delimiter)
     return new Buttons(text, { callback_data })
   }
 
@@ -66,7 +65,7 @@ export default class Buttons {
 
   static acceptOrder( ...orderId: (number | string)[] ){
     const text = '✅ Взять в работу'
-    const callback_data = ['acceptOrder', ...orderId].join(Delimiter)
+    const callback_data = ['acceptOrder', ...orderId].join(Config.delimiter)
     return new Buttons(text, {callback_data})
   }
 
@@ -101,18 +100,18 @@ export default class Buttons {
   }
 
   static activate (text= '🔊 Активировать', ...params: (string | number)[]) {
-    const callback_data = ['actvt', ...params].join(Delimiter)
+    const callback_data = ['actvt', ...params].join(Config.delimiter)
     return {text, callback_data}
   }
 
   static deactivate (text = '🔇 Выключить', ...params: (string | number)[]) {
-    const callback_data = ['dctvt', ...params].join(Delimiter)
+    const callback_data = ['dctvt', ...params].join(Config.delimiter)
     return {text, callback_data}
   }
 
   static setForce(...params: (string | number)[]){
     const text = '🗿 Принудительно перезаписать'
-    const callback_data = ['setForce', ...params].join(Delimiter)
+    const callback_data = ['setForce', ...params].join(Config.delimiter)
     return {text, callback_data}
   }
 

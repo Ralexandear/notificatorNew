@@ -1,4 +1,4 @@
 export default interface ConfigAttributes {
-  Delimiter: string;
-  EnabledPoints: number[];
+  delimiter: string;
+  enabledPoints: number[] | Set<number>;
 }

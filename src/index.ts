@@ -5,8 +5,8 @@ import { initDatabasePromise } from './database/initDatabase';
 import { User } from './database/models';
 import UserController from './controllers/databaseControllers/UserController';
 import { CallbackQueryHandler } from './handlers/callbackQueryHandlers/CallbackQueryHandler';
-import { EnabledPointsSet } from './utilities/readConfig';
 import PointsController from './controllers/databaseControllers/PointsController';
+import Config from './config';
 
 const botToken = process.env.BOT_TOKEN;
 export const log = console.log
@@ -35,7 +35,7 @@ const botInitializationPromise = (async () => {
 async function syncPoints() {
   const pointsIds = new Set(await PointsController.getPointIds());
 
-  for (const pointId of EnabledPointsSet) {
+  for (const pointId of Config.enabledPoints) {
     if (pointsIds.has(pointId)) continue;
     await PointsController.create(pointId);
   }

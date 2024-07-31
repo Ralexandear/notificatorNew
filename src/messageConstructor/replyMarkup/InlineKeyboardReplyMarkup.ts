@@ -9,8 +9,7 @@ import PresetController from "../../controllers/databaseControllers/PresetContro
 import { ShiftSizeType } from "../../types/ShiftSizeType";
 import { ShiftEnum } from "../../enums/ShiftEnum";
 import { Icons } from "../../enums/IconsEnum";
-import { Delimiter } from "../../utilities/readConfig";
-
+import Config from "../../config";
 
 
 type InlineKeyboardRow = TelegramBot.InlineKeyboardButton[];
@@ -94,7 +93,7 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
         // const keyboard = replyMarkup.inline_keyboard;
     
         if (shiftSize === 'full') {
-          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + '.2', [icon, point.id, ShiftEnum[ shiftSize ] ].join(Delimiter))
+          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + '.2', [icon, point.id, ShiftEnum[ shiftSize ] ].join(Config.delimiter))
           const buttons = points.map(point => {
             const shiftTypes = ['morning', 'evening'] as ShiftType[];
 
@@ -122,7 +121,7 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
 
         const buttons =  (['morning', 'evening'] as ShiftType[]).map((shiftType, el) => {
           const postfix = el ? '.1' : ''
-          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + postfix, [icon, point.id, ShiftEnum[ shiftType ]].join(Delimiter))
+          const getButton = (icon: string, point: Point) => Buttons.selectButton(icon + ' ' + point.point + postfix, [icon, point.id, ShiftEnum[ shiftType ]].join(Config.delimiter))
     
           const buttons = points.map(point => {
             const icon = (() => {
