@@ -3,12 +3,11 @@ import { Point, User } from "../../../database/models"
 import { Log } from "../../../utilities/Log"
 import splitCommand from "../../../utilities/splitCommand"
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons"
-import { SelectPointsTempType } from "../../../types/TempType"
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor"
-import { Icons } from "../../../config"
 import { ShiftSelectorType } from "../../../types/ShiftType"
 import PointsController from "../../../controllers/databaseControllers/PointsController"
 import { ShiftSizeType } from "../../../types/ShiftSizeType"
+import { Icons } from "../../../enums/IconsEnum"
 
 
 

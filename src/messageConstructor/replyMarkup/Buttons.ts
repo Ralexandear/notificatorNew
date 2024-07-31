@@ -1,4 +1,4 @@
-import { Delimiter } from "../../config";
+import { Delimiter } from "../../utilities/readConfig";
 
 
 export default class Buttons {

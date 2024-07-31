@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import { Point } from "../../database/models";
 import { parseCheckInteger } from "../../parseCheckInteger";
+import { PointAttributes } from "../../interfaces/databaseInterfaces";
 
 
 class PointsControllerClass {
@@ -31,6 +32,10 @@ class PointsControllerClass {
 
     if (pointNumbers.length === points.length) return points;
     throw new Error('Unexpected error, expected point numbers not equal to quantity of points requested');
+  }
+
+  async getPointIds(){
+    return Point.findAll({attributes: ['id'] as (keyof PointAttributes)[]}).then(result => result.map(e => e.id))
   }
 
 }

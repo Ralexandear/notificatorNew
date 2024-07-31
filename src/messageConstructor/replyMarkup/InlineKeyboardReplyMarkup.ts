@@ -2,13 +2,14 @@ import TelegramBot from "node-telegram-bot-api";
 import Buttons from "./Buttons";
 import { Point, Preset, User } from "../../database/models";
 import PointsController from "../../controllers/databaseControllers/PointsController";
-import { Delimiter, Icons } from "../../config";
 import { SelectPointsTempType } from "../../types/TempType";
 import { ShiftSelectorType, ShiftType } from "../../types/ShiftType";
 import { PresetActionType } from "../../types/PresetActionType";
 import PresetController from "../../controllers/databaseControllers/PresetController";
 import { ShiftSizeType } from "../../types/ShiftSizeType";
 import { ShiftEnum } from "../../enums/ShiftEnum";
+import { Icons } from "../../enums/IconsEnum";
+import { Delimiter } from "../../utilities/readConfig";
 
 
 

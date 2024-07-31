@@ -57,7 +57,7 @@ Models.Point.init({
 
 
 export const initDatabasePromise = (async () => {
-  return Promise.all([
+  await Promise.all([
     Postgres.authenticate()
       .then(() => Postgres.sync())
       .then(async () => {
@@ -67,5 +67,6 @@ export const initDatabasePromise = (async () => {
       })
       .then(() => console.log('Postgres is ready')),
     RedisClient.connect().then(() => console.log('Redis is ready'))
-  ])
+  ]);
+  
 })();

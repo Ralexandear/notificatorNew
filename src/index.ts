@@ -5,6 +5,8 @@ import { initDatabasePromise } from './database/initDatabase';
 import { User } from './database/models';
 import UserController from './controllers/databaseControllers/UserController';
 import { CallbackQueryHandler } from './handlers/callbackQueryHandlers/CallbackQueryHandler';
+import { EnabledPointsSet } from './utilities/readConfig';
+import PointsController from './controllers/databaseControllers/PointsController';
 
 const botToken = process.env.BOT_TOKEN;
 export const log = console.log
@@ -18,6 +20,8 @@ let Admin: User
 
 const botInitializationPromise = (async () => {
   await initDatabasePromise;
+  await syncPoints()
+
   const adminTelegramId = process.env.ADMIN;
   
   if (! adminTelegramId) throw new Error('Required parameter ADMIN is missing in env')
@@ -26,6 +30,16 @@ const botInitializationPromise = (async () => {
   console.log(await Bot.getMe());
   console.log('Bot is ready')
 })();
+
+
+async function syncPoints() {
+  const pointsIds = new Set(await PointsController.getPointIds());
+
+  for (const pointId of EnabledPointsSet) {
+    if (pointsIds.has(pointId)) continue;
+    await PointsController.create(pointId);
+  }
+}
 
 export { botInitializationPromise, Bot};
 export default Bot;
