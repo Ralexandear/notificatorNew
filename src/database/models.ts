@@ -210,7 +210,7 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
   readonly id!: number;
   morning!: number | null;
   evening!: number | null;
-  // readonly listeners!: ListenersType;
+  readonly listeners!: ListenersType;
   private _savePromise?: Promise<any> | null
 
   private saveIt(){
@@ -247,7 +247,6 @@ export class Point extends Model<Interfaces.PointAttributes, Interfaces.PointCre
   }
 
   async getListeners (shiftType: ShiftType) {
-    //@ts-ignore
     const userIds = this.listeners[ shiftType ]
     if (userIds.length) return await UserController.getByIds( ...userIds )
   }

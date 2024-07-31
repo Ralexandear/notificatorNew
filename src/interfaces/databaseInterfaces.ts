@@ -1,6 +1,7 @@
 import { Optional } from "sequelize";
 import { ProgramsType } from "../types/Programs";
 import { UserStatusEnum } from "../enums/UserStatusEnum";
+import { ListenersType } from "../types/ListenersType";
 
 export interface UserAttributes {
   id: number;
@@ -21,10 +22,10 @@ export interface PointAttributes {
   id: number;
   morning: number | null;
   evening: number | null;
-  // listeners: ListenersType
+  listeners: ListenersType
 }
 
-export interface PointCreationAttributes extends Optional<PointAttributes, 'morning' | 'evening' > {}
+export interface PointCreationAttributes extends Optional<PointAttributes, 'morning' | 'evening' | 'listeners'> {}
 
 
 export interface TempAttributes {
