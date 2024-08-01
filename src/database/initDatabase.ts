@@ -2,8 +2,8 @@ import { DataTypes } from "sequelize"
 import * as Models from "./models"
 import Postgres from "./Postgres";
 import RedisClient from "./Redis";
-import { ListenersDefaultValue } from "../types/ListenersType";
-import { UserStatusEnum } from "../enums/UserStatusEnum";
+import { ListenersDefaultValue } from "../bot/types/ListenersType";
+import { UserStatusEnum } from "../bot/enums/UserStatusEnum";
 
 Models.User.init (
   {
@@ -68,5 +68,5 @@ export const initDatabasePromise = (async () => {
       .then(() => console.log('Postgres is ready')),
     RedisClient.connect().then(() => console.log('Redis is ready'))
   ]);
-  
+
 })();

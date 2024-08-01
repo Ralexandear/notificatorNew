@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api"
-import PointsController from "../../../controllers/databaseControllers/PointsController"
+import PointsController from "../../../../controllers/databaseControllers/PointsController"
 import { ShiftType } from "../../../types/ShiftType"
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor"
 import { googleMapsGeocoder } from "../../../utilities/googleMapsGeocoder"

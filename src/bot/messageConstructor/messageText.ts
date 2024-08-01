@@ -1,7 +1,7 @@
 // import { User } from "../database/models";
 
-import PointsController from "../controllers/databaseControllers/PointsController"
-import { Point, User } from "../database/models"
+import PointsController from "../../controllers/databaseControllers/PointsController"
+import { Point, User } from "../../database/models"
 import { PostfixEnum } from "../enums/PostfixEnum"
 import { ShiftSelectorType, ShiftType } from "../types/ShiftType"
 

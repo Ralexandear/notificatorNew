@@ -1,21 +1,21 @@
-import * as Interfaces from "../interfaces/databaseInterfaces"
+import * as Interfaces from "../bot/interfaces/databaseInterfaces"
 
 import { Model } from "sequelize";
-import { ProgramsType } from "../types/Programs";
+import { ProgramsType } from "../bot/types/Programs";
 import TelegramBot from "node-telegram-bot-api";
-import { Bot, log } from "..";
+import { Bot, log } from "../bot/main";
 import TelegramQueue, { TelegramQueueOptions } from "../controllers/TelegramQueue";
-import { ListenersType } from "../types/ListenersType";
-import { ShiftSelectorType, ShiftType } from "../types/ShiftType";
+import { ListenersType } from "../bot/types/ListenersType";
+import { ShiftSelectorType, ShiftType } from "../bot/types/ShiftType";
 import UserController from "../controllers/databaseControllers/UserController";
 import RedisController from "../controllers/RedisController";
-import { MessageConstructor } from "../messageConstructor/MessageConstructor";
-import { TempType } from "../types/TempType";
-import { PostfixEnum } from "../enums/PostfixEnum";
-import { Log } from "../utilities/Log";
+import { MessageConstructor } from "../bot/messageConstructor/MessageConstructor";
+import { TempType } from "../bot/types/TempType";
+import { PostfixEnum } from "../bot/enums/PostfixEnum";
+import { Log } from "../bot/utilities/Log";
 import PresetController from "../controllers/databaseControllers/PresetController";
-import BotError from "../Errors/BotError";
-import { UserStatusEnum } from "../enums/UserStatusEnum";
+import BotError from "../bot/Errors/BotError";
+import { UserStatusEnum } from "../bot/enums/UserStatusEnum";
 import PointsController from "../controllers/databaseControllers/PointsController";
 
 

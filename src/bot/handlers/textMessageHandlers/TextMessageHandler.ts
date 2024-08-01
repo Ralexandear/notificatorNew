@@ -1,11 +1,11 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botInitializationPromise } from "../..";
+import { botInitializationPromise } from "../../main";
 import NotificatorHandler from "./modules/NotificatorHandler";
-import UserController from "../../controllers/databaseControllers/UserController";
-import { User } from "../../database/models";
+import UserController from "../../../controllers/databaseControllers/UserController";
+import { User } from "../../../database/models";
 import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
 import MenuHandler from "./modules/MenuHandler";
-import CommandsFreezer from "../../controllers/CommandsFreezer";
+import CommandsFreezer from "../../../controllers/CommandsFreezer";
 import { UserStatusEnum } from "../../enums/UserStatusEnum";
 
 

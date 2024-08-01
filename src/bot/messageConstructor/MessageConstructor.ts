@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { Point, Preset, User } from "../database/models"
+import { Point, Preset, User } from "../../database/models"
 import MessageText from "./messageText"
 import { InlineKeyboardReplyMarkup } from "./replyMarkup/InlineKeyboardReplyMarkup";
 import ReplyKeyboardMarkup from "./replyMarkup/ReplyKeyboardMarkup";

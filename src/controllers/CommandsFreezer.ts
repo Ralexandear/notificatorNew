@@ -1,4 +1,4 @@
-import { sleep } from "../utilities/sleep";
+import { sleep } from "../bot/utilities/sleep";
 
 class CommandsFreezerClass {
   private queue: Map<string, Map<string, number>>;

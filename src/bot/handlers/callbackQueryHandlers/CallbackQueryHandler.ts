@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botInitializationPromise } from "../..";
-import UserController from "../../controllers/databaseControllers/UserController";
+import { botInitializationPromise } from "../../main";
+import UserController from "../../../controllers/databaseControllers/UserController";
 import splitCommand from "../../utilities/splitCommand";
 import Buttons from "../../messageConstructor/replyMarkup/Buttons";
 import { Log } from "../../utilities/Log";
@@ -8,7 +8,7 @@ import { MessageConstructor } from "../../messageConstructor/MessageConstructor"
 import { AcceptOrderHandler } from "./modules/AcceptOrderHandler";
 import { SelectPointsHandler } from "./modules/SelectPointsHandler";
 import PresetHandler from "./modules/PresetHandler";
-import { User } from "../../database/models";
+import { User } from "../../../database/models";
 
 export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery) {
   try{

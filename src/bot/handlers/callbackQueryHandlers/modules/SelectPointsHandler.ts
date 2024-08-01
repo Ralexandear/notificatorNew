@@ -1,11 +1,11 @@
 import TelegramBot from "node-telegram-bot-api"
-import { Point, User } from "../../../database/models"
+import { Point, User } from "../../../../database/models"
 import { Log } from "../../../utilities/Log"
 import splitCommand from "../../../utilities/splitCommand"
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons"
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor"
 import { ShiftSelectorType } from "../../../types/ShiftType"
-import PointsController from "../../../controllers/databaseControllers/PointsController"
+import PointsController from "../../../../controllers/databaseControllers/PointsController"
 import { ShiftSizeType } from "../../../types/ShiftSizeType"
 import { Icons } from "../../../enums/IconsEnum"
 

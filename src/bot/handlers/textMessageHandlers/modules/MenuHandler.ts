@@ -1,8 +1,8 @@
 import TelegramBot, { InlineKeyboardMarkup } from "node-telegram-bot-api"
-import { User } from "../../../database/models"
+import { User } from "../../../../database/models"
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
-import Bot from "../../..";
+import Bot from "../../../main";
 
 
 export async function MenuHandler (user: User, message: TelegramBot.Message){

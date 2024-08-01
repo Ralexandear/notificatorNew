@@ -1,15 +1,15 @@
 import TelegramBot from "node-telegram-bot-api";
 import Buttons from "./Buttons";
-import { Point, Preset, User } from "../../database/models";
-import PointsController from "../../controllers/databaseControllers/PointsController";
+import { Point, Preset, User } from "../../../database/models";
+import PointsController from "../../../controllers/databaseControllers/PointsController";
 import { SelectPointsTempType } from "../../types/TempType";
 import { ShiftSelectorType, ShiftType } from "../../types/ShiftType";
 import { PresetActionType } from "../../types/PresetActionType";
-import PresetController from "../../controllers/databaseControllers/PresetController";
+import PresetController from "../../../controllers/databaseControllers/PresetController";
 import { ShiftSizeType } from "../../types/ShiftSizeType";
 import { ShiftEnum } from "../../enums/ShiftEnum";
 import { Icons } from "../../enums/IconsEnum";
-import Config from "../../config";
+import Config from "../../Config";
 
 
 type InlineKeyboardRow = TelegramBot.InlineKeyboardButton[];

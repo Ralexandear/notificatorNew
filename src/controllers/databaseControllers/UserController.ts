@@ -2,7 +2,7 @@ import { Json } from "sequelize/types/utils";
 import { User } from "../../database/models";
 import RedisController from "../RedisController";
 import { Op } from "sequelize";
-import { UserStatusEnum } from "../../enums/UserStatusEnum";
+import { UserStatusEnum } from "../../bot/enums/UserStatusEnum";
 
 
 class UserControllerClass {

@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { User } from "../../../database/models";
+import { User } from "../../../../database/models";
 import splitCommand from "../../../utilities/splitCommand";
 import { Log } from "../../../utilities/Log";
 

@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import Buttons from "./Buttons";
-import { User } from "../../database/models";
+import { User } from "../../../database/models";
 
 type KeyboardButton = Buttons[]
 // add in TelegramBot.KeyboardButton property 'toReplyKeyboard' as optional

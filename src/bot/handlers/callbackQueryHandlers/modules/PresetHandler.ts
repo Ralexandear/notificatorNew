@@ -1,13 +1,13 @@
 import TelegramBot from "node-telegram-bot-api";
-import { Preset, User } from "../../../database/models";
+import { Preset, User } from "../../../../database/models";
 import splitCommand from "../../../utilities/splitCommand";
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
 import { PresetActionType } from "../../../types/PresetActionType";
 import { Log } from "../../../utilities/Log";
 import BotError from "../../../Errors/BotError";
-import PointsController from "../../../controllers/databaseControllers/PointsController";
-import { log } from "../../..";
+import PointsController from "../../../../controllers/databaseControllers/PointsController";
+import { log } from "../../../main";
 
 
 

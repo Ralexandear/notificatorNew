@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import { Point } from "../../database/models";
-import { parseCheckInteger } from "../../parseCheckInteger";
-import { PointAttributes } from "../../interfaces/databaseInterfaces";
+import { parseCheckInteger } from "../../bot/utilities/parseCheckInteger";
+import { PointAttributes } from "../../bot/interfaces/databaseInterfaces";
 
 
 class PointsControllerClass {

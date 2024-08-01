@@ -1,4 +1,4 @@
-import { sleep } from "../utilities/sleep";
+import { sleep } from "../bot/utilities/sleep";
 
 export type TelegramQueueOptions = {priority?: number, delay?: number}
 
