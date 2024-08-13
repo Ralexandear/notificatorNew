@@ -3,7 +3,7 @@ import * as Interfaces from "../bot/interfaces/databaseInterfaces"
 import { Model } from "sequelize";
 import { ProgramsType } from "../bot/types/Programs";
 import TelegramBot from "node-telegram-bot-api";
-import { Bot, log } from "../bot/main";
+import { Bot, log } from "../bot";
 import TelegramQueue, { TelegramQueueOptions } from "../controllers/TelegramQueue";
 import { ListenersType } from "../bot/types/ListenersType";
 import { ShiftSelectorType, ShiftType } from "../bot/types/ShiftType";

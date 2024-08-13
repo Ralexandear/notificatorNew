@@ -6,7 +6,7 @@ import ConfigAttributes from '../interfaces/configInterface';
 const fileDir = path.resolve(__dirname, '../../config.json');
 
 class ConfigClass {
-  _config: ConfigAttributes
+  private _config: ConfigAttributes
 
   constructor() {
     // Загружаем конфигурацию при инициализации
@@ -50,6 +50,19 @@ class ConfigClass {
 
   get delimiter() {
     return this._config.delimiter
+  }
+
+  get updatingTime() {
+    return this._config.updatingTime
+  }
+
+  get lastShiftClearing() {
+    const lastShiftClearingString = this._config.lastShiftClearing;
+    return lastShiftClearingString ? new Date( lastShiftClearingString ) : null
+  }
+
+  setLastShiftClearing(date = new Date()){
+    this.set('lastShiftClearing', date.toLocaleDateString('ru-ru', {year: 'numeric', month: '2-digit', day: '2-digit'}))
   }
 }
 

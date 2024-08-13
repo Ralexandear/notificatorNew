@@ -1,0 +1,1 @@
+export type PrimitiveType = 'bigint' | 'string' | 'number' | 'boolean' | 'object' | 'undefined' | 'symbol' | 'function'

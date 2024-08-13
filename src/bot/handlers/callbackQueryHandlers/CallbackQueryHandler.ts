@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botInitializationPromise } from "../../main";
+import { botInitializationPromise } from "../..";
 import UserController from "../../../controllers/databaseControllers/UserController";
 import splitCommand from "../../utilities/splitCommand";
 import Buttons from "../../messageConstructor/replyMarkup/Buttons";

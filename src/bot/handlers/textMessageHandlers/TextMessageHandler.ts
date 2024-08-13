@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botInitializationPromise } from "../../main";
+import { botInitializationPromise } from "../..";
 import NotificatorHandler from "./modules/NotificatorHandler";
 import UserController from "../../../controllers/databaseControllers/UserController";
 import { User } from "../../../database/models";

@@ -7,7 +7,7 @@ import { PresetActionType } from "../../../types/PresetActionType";
 import { Log } from "../../../utilities/Log";
 import BotError from "../../../Errors/BotError";
 import PointsController from "../../../../controllers/databaseControllers/PointsController";
-import { log } from "../../../main";
+import { log } from "../../..";
 
 
 

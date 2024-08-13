@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { Point } from "../../database/models";
 import { parseCheckInteger } from "../../bot/utilities/parseCheckInteger";
 import { PointAttributes } from "../../bot/interfaces/databaseInterfaces";
+import { ListenersDefaultValue } from "../../bot/types/ListenersType";
 
 
 class PointsControllerClass {
@@ -36,6 +37,10 @@ class PointsControllerClass {
 
   async getPointIds(){
     return Point.findAll({attributes: ['id'] as (keyof PointAttributes)[]}).then(result => result.map(e => e.id))
+  }
+
+  async removeAllUsers () {
+    return Point.update({morning: null, evening: null, _listeners: ListenersDefaultValue}, {where: {},returning: false})
   }
 
 }
