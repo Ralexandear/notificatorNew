@@ -1,4 +1,4 @@
-import Config from '../../Config';
+import Config from "../../../utils/Config";
 
 export default class Buttons {
   text: string;

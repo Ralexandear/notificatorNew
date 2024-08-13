@@ -9,7 +9,7 @@ import PresetController from "../../../controllers/databaseControllers/PresetCon
 import { ShiftSizeType } from "../../types/ShiftSizeType";
 import { ShiftEnum } from "../../enums/ShiftEnum";
 import { Icons } from "../../enums/IconsEnum";
-import Config from "../../Config";
+import Config from "../../../utils/Config";
 
 
 type InlineKeyboardRow = TelegramBot.InlineKeyboardButton[];
