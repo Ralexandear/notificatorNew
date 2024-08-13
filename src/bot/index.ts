@@ -7,6 +7,7 @@ import UserController from '../controllers/databaseControllers/UserController';
 import { CallbackQueryHandler } from './handlers/callbackQueryHandlers/CallbackQueryHandler';
 import PointsController from '../controllers/databaseControllers/PointsController';
 import Config from '../utils/Config';
+import '../cron/CronCleanPoints'
 
 const botToken = process.env.BOT_TOKEN;
 export const log = console.log

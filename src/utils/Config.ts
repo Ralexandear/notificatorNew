@@ -1,6 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import ConfigAttributes from '../interfaces/configInterface';
+import Validator from './Validator';
+import ValidationError from '../errors/ValidationError';
+import CronCleanPoints from '../cron/CronCleanPoints';
 
 // Определяем путь к файлу конфигурации
 const fileDir = path.resolve(__dirname, '../../config.json');
@@ -19,7 +22,7 @@ class ConfigClass {
       const configFile = fs.readFileSync(fileDir, 'utf-8');
       return JSON.parse(configFile); // Парсим JSON из файла
     } catch (error) {
-      console.log('❗️Ошибка загрузки конфигурации:', error);
+      console.log('❗️Error of loading configuration:', error);
       throw error
     }
   }
@@ -39,8 +42,9 @@ class ConfigClass {
   private saveConfig() {
     try {
       fs.writeFileSync(fileDir, JSON.stringify(this._config, null, 2), 'utf-8');
+      console.log('Config updated')
     } catch (error) {
-      console.log('❗️Ошибка сохранения конфигурации:', error);
+      console.log('❗️Error of saving configuration:', error);
     }
   }
 
@@ -56,13 +60,21 @@ class ConfigClass {
     return this._config.updatingTime
   }
 
+  setUpdatingTime(hours: number, minutes: number) {
+    if (! ( Validator.number(hours).isHours() && Validator.number(minutes).isMinutes() ) ) {
+      throw new ValidationError('Time validation error!')
+    }
+    this.set('updatingTime', { hours, minutes })
+    CronCleanPoints.updateTimer(hours, minutes)
+  }
+
   get lastShiftClearing() {
-    const lastShiftClearingString = this._config.lastShiftClearing;
+    const lastShiftClearingString = this._config.lastShiftClearingDateString;
     return lastShiftClearingString ? new Date( lastShiftClearingString ) : null
   }
 
   setLastShiftClearing(date = new Date()){
-    this.set('lastShiftClearing', date.toLocaleDateString('ru-ru', {year: 'numeric', month: '2-digit', day: '2-digit'}))
+    this.set('lastShiftClearingDateString', date.toISOString())
   }
 }
 

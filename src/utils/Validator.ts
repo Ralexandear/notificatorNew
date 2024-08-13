@@ -1,6 +1,6 @@
 import ValidationError from "../errors/ValidationError";
 import { PrimitiveType } from "../types/primitiveType";
-import getDateWithoutTime from "./getDatesWithoutTime";
+import Formatter from "./Formatter";
 
 class ValidatorClass {
   private error: typeof ValidationError
@@ -8,12 +8,9 @@ class ValidatorClass {
   constructor () {
     this.error = ValidationError
   }
-  
-
 
   checkType(typeExpected: PrimitiveType, data: any) {
     const currentType = typeof data
-    
     if (currentType === typeExpected) {
       if (currentType !== 'object') return data
       else if (data instanceof Date && ! isNaN(data.getTime())) return data
@@ -23,9 +20,7 @@ class ValidatorClass {
 
 
 
-  string(data: any) {
-    const text = this.checkType('string', data) as string; //if void then value is string
-
+  string(text: string) {
     const isNotEmpty = () => Boolean(text.length)
     const isEqualTo =(text: string) => text === text
     const isInList = (...strings: string[]) => strings.includes(text)
@@ -43,9 +38,7 @@ class ValidatorClass {
     }
   }
 
-  number(data: any) {
-    const integer = this.checkType('number', data) as number;
-
+  number(integer: number) {
     const isPositive = () => integer > 0;
     const isZero = () => integer === 0;
     const isNegative = () => integer < 0
@@ -55,19 +48,27 @@ class ValidatorClass {
       if (this.number(max).isBiggerThan(min)) return integer >= min && integer <= max
       throw new this.error(`Parameter 'maximum' must be above zero, but it is not. Min value: ${min}, max val: ${max}`)
     }
+
+    
     
     return {
-      isPositive, isZero, isNegative, isBiggerThan, isEqualTo, isBetween
+      isPositive, isZero, isNegative, isBiggerThan, isEqualTo, isBetween,
+
+      isHours () {
+        return this.isBetween(0, 23)
+      },
+
+      isMinutes () {
+        return this.isBetween(0, 59)
+      }
     }
   }
 
-  date(data: any) {
-    const date = this.checkType('object', data) as Date;
-    
+  date(date: Date) {
     const comparison = (dateForComparison: Date, strict = false) => {
       const formattedDates = (() => {
         const dates = [date, dateForComparison];
-        return strict ? dates : getDateWithoutTime(...dates)
+        return strict ? dates : Formatter.date().getDatesWithoutTime(...dates)
       })();
 
       const [timestamp, timestampToCompare] = formattedDates.map(e => e.getTime())
@@ -77,9 +78,10 @@ class ValidatorClass {
       const isBiggerThan = () => timestamp - timestampToCompare > 0
       const isLowerThan = () => timestamp - timestampToCompare < 0
       const isEqualTo = () => timestamp === timestampToCompare
+      const getDaysBetween = () => Math.abs( timestamp - timestampToCompare ) / 86_400_000
 
       return {
-        isBiggerThan, isLowerThan, isEqualTo
+        isBiggerThan, isLowerThan, isEqualTo, getDaysBetween
       }
     }
 
@@ -87,6 +89,8 @@ class ValidatorClass {
       const timestamp = date.getTime()
       return timestamp >= dateFrom.getTime() && timestamp <= dateTo.getTime()
     }
+
+    
 
     return {
       comparison, isBetween

@@ -1,6 +1,9 @@
 export default interface ConfigAttributes {
   delimiter: string;
   enabledPoints: number[];
-  updatingTime: string;
-  lastShiftClearing: string;
+  updatingTime: {
+    hours: number;
+    minutes: number;
+  },
+  lastShiftClearingDateString: string;
 }
