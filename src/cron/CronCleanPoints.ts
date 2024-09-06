@@ -3,7 +3,7 @@ import Config from '../utils/Config'
 import PointsController from '../controllers/databaseControllers/PointsController';
 import Validator from '../utils/Validator';
 import ValidationError from '../errors/ValidationError';
-import { initDatabasePromise } from '../database/initDatabase';
+import { botInitializationPromise } from '../bot';
 
 const getCronTimer = (hours: number, minutes: number ) => {
   if (Validator.number(hours).isHours() && Validator.number(+minutes).isMinutes()) return `${minutes} ${hours} * * *`
@@ -19,7 +19,8 @@ class CronCleanPointsClass {
   private _lastShiftClearingDate: Date | null;
   
   constructor() {
-    const [hours, minutes] = Config.updatingTime.split(':').map(Number);
+    console.log(Config)
+    const {hours, minutes} = Config.updatingTime;
     this._updateTime = {hours, minutes};
     this._lastShiftClearingDate = Config.lastShiftClearing;
     this.checkManually();
@@ -37,7 +38,7 @@ class CronCleanPointsClass {
   }
 
   private async cleanPoints(){
-    await initDatabasePromise;
+    await botInitializationPromise;
     
     await PointsController.removeAllUsers()
     console.log('All users removed from points!')
@@ -46,7 +47,7 @@ class CronCleanPointsClass {
   }
 
   private async checkManually () {
-    await initDatabasePromise;
+    await botInitializationPromise;
 
     const lastUpdateDate = this._lastShiftClearingDate
     console.log(lastUpdateDate)
