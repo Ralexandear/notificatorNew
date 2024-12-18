@@ -8,4 +8,8 @@ export class AuthError extends Error {
     if (username) message += ', username' + username
     return new this(message)
   }
+
+  static usernameIsMissing(telegramId: number | string) {
+    return new this('Username is missing for telegram id: ' + telegramId)
+  }
 }

@@ -7,6 +7,7 @@ import MenuHandler from "./modules/MenuHandler";
 import { UserModel } from "../../../database/models/sequelize/User.model";
 import { UserStatusEnum } from "../../../enums/UserStatus.enum";
 import { User } from "../../../database/models/public/User";
+import { AuthError } from "../../../Errors/AuthError";
 
 
 
@@ -24,6 +25,13 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
     //   user.deleteMessage(message.message_id);
     //   return
     // }
+    const checkUsername = async (user: User) => {
+      if (message.chat?.username) return
+
+      const {text} = MessageConstructor.errors().usernameIsMissing()
+      await user.sendMessage(text)
+      throw AuthError.usernameIsMissing(user.telegramId)
+    }
       
     if (! user){
       const notUser = User.init(
@@ -37,11 +45,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
       ) 
       
       if (messageText === 'veryFunny') {
-        if (! notUser.username) {
-          const {text} = MessageConstructor.errors().usernameIsMissing()
-          notUser.sendMessage(text)
-          return
-        }
+        await checkUsername(notUser)
         
         const user = await UserController.create(notUser.telegramId, notUser.fullName, notUser.username)
         user.openMenu(`Авторизация успешно завершена!`)
@@ -59,7 +63,9 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
       return
     }
 
-    console.log('Пользователь:', user.fullName, 'id', user.id, 'Сообщение:', messageText)
+    console.log('Пользователь:', user.fullName, 'id', user.id, 'Сообщение:', messageText);
+    await checkUsername(user)
+    user.checkUsername(message.chat.username as string)
 
     if (user.status !== UserStatusEnum.active){
       const {text, reply_markup} = MessageConstructor.errors().authorizationError();
@@ -73,6 +79,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
     }
     
     await MenuHandler(user, message)
+    await user.save()
   } catch(e){
     console.error(e)
   }

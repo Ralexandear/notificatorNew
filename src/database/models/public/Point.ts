@@ -25,21 +25,8 @@ export class Point extends IncapsulationModel<PointModel> implements PointAttrib
     return 'К' + this.id
   }
 
-  get morning() {
-    return this.model.morning
-  }
 
-  set morning(userId: number | null) {
-    this.model.morning = userId
-  }
 
-  get evening() {
-    return this.model.evening
-  }
-
-  set evening(userId: number | null) {
-    this.model.evening = userId
-  }
 
   async getUser (shiftType: ShiftType) {
     const userId = this.getUserId( shiftType )
@@ -50,32 +37,32 @@ export class Point extends IncapsulationModel<PointModel> implements PointAttrib
     return this[shiftType as keyof this] as number | null
   }
 
-  private setUser( shiftType: ShiftType, user: User ) {
-    if (shiftType === 'morning') this.morning = user.id
-    else if (shiftType === 'evening') this.evening = user.id
-    else throw new FatalError('Unexpected shift type while adding user to a point')
+  // private setUser( shiftType: ShiftType, user: User ) {
+  //   if (shiftType === 'morning') this.morning = user.id
+  //   else if (shiftType === 'evening') this.evening = user.id
+  //   else throw new FatalError('Unexpected shift type while adding user to a point')
 
-    console.log(user.fullName, 'записался на точку', this.id, shiftType)
+  //   console.log(user.fullName, 'записался на точку', this.id, shiftType)
 
-    return this
-  }
+  //   return this
+  // }
 
-  private removeUser( shiftType: ShiftType, user: User ) {
-    if (shiftType === 'morning') {
-      if (this.morning === user.id) {
-        this.morning = null;
-      }
-    } else if (shiftType === 'evening') {
-      if (this.evening === user.id) {
-        this.evening = null
-      }
-    }
-    else throw new FatalError('Unexpected shift type while removing user from point')
+  // private removeUser( shiftType: ShiftType, user: User ) {
+  //   if (shiftType === 'morning') {
+  //     if (this.morning === user.id) {
+  //       this.morning = null;
+  //     }
+  //   } else if (shiftType === 'evening') {
+  //     if (this.evening === user.id) {
+  //       this.evening = null
+  //     }
+  //   }
+  //   else throw new FatalError('Unexpected shift type while removing user from point')
 
-    console.log(user.fullName, 'освободил точку', this.id, shiftType)
+  //   console.log(user.fullName, 'освободил точку', this.id, shiftType)
 
-    return this
-  }
+  //   return this
+  // }
 
   
   // /**

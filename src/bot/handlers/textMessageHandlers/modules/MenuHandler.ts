@@ -24,9 +24,12 @@ export async function MenuHandler (user: User, message: TelegramBot.Message){
   }
   else return
 
-  user.deletePreviousInlineMessage()
-  //@ts-ignore
-  user.sendMessage(text, {reply_markup}, true)
+  return Promise.all(
+    [
+      user.deletePreviousInlineMessage(),
+      user.sendMessage(text, {reply_markup}, true)
+    ]
+  )
 }
 
 

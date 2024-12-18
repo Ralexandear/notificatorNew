@@ -1,63 +1,70 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botInitializationPromise } from "../..";
-import UserController from "../../../controllers/databaseControllers/UserController";
-import splitCommand from "../../utilities/splitCommand";
-import Buttons from "../../messageConstructor/replyMarkup/Buttons";
-import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
-import { AcceptOrderHandler } from "./modules/AcceptOrderHandler";
+import { User } from "../../../database/models/public/User";
 import { SelectPointsHandler } from "./modules/SelectPointsHandler";
 import PresetHandler from "./modules/PresetHandler";
-import { User } from "../../../database/models/public/User";
+import { AcceptOrderHandler } from "./modules/AcceptOrderHandler";
+import Buttons from "../../messageConstructor/replyMarkup/Buttons";
+import splitCommand from "../../utilities/splitCommand";
+import { AuthError } from "../../../Errors/AuthError";
+import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
+import UserController from "../../../controllers/databaseControllers/UserController";
+import { botInitializationPromise } from "../..";
 
-export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery) {
-  try{
+export async function CallbackQueryHandler(callback: TelegramBot.CallbackQuery) {
+  try {
     await botInitializationPromise;
-    console.log('new callback', callback)
+    console.log("New callback", callback);
 
-    const telegramId = callback.from.id.toString()
-    const user = await UserController.find( telegramId );
+    const telegramId = callback.from.id.toString();
+    const user = await UserController.find(telegramId);
 
-    if (! user) return
-    
+    if (!user) return;
+
     const username = callback.from.username;
-    if (! username){
-      const {text, reply_markup} = MessageConstructor.errors().usernameIsMissing();
-      user.sendMessage(text, {reply_markup})
-      console.log('Username is missing, callbackId', callback.id)
-      return
+    if (!username) {
+      const { text, reply_markup } = MessageConstructor.errors().usernameIsMissing();
+      await user.sendMessage(text, { reply_markup });
+      throw AuthError.usernameIsMissing(telegramId);
     }
-    
-    user.checkUsername( username );
-    if (! callback.data) return
 
-    const {action} = splitCommand( callback.data )
-    console.log(CallbackQueryHandler.name, 'Пользователь:', user.fullName, 'id', user.id, 'комманда:', action)
-    
-    
+    user.checkUsername(username);
+
+    if (!callback.data) {
+      console.warn("Callback data is missing:", callback);
+      return;
+    }
+
+    const { action } = splitCommand(callback.data);
+    console.log(`User: ${user.fullName} (${user.id}), Action: ${action}`);
+
     if (action === Buttons.acceptOrder().callback_data) {
-      AcceptOrderHandler(user, callback)
-      return
+      await AcceptOrderHandler(user, callback);
+    } else {
+      await handleProgramAction(user, callback);
     }
-    //@ts-ignore Ошибка в библиотеке note-telegram-bot-api
-    user.answerCallbackQuery(callback.id, {cache_time: 2});
 
-    // if (user.messageId !== callback.message?.message_id) {
-    //   console.log('Inline message id !== user.messageId, work stopped')
-    //   return
-    // }
-
-    let handler: (user: User, callback: TelegramBot.CallbackQuery) => Promise<any>;
-    
-    if (user.program === 'selectPoints') handler = SelectPointsHandler
-    else if (user.program === 'presets') handler = PresetHandler
-    else {
-      console.log('Unhandled user program:', user.program)
-      return
-    }
-    
-    console.log('Selected callback handler', handler.name, 'callbackId:', callback.id);
-    await handler(user, callback)
+    await user.save();
   } catch (e) {
-    console.log('Catched error', e)
+    console.error("Error in CallbackQueryHandler", { error: e, callback });
   }
+}
+
+
+
+async function handleProgramAction(user: User, callback: TelegramBot.CallbackQuery) {
+  let handler;
+  switch (user.program) {
+    case "selectPoints":
+      handler = SelectPointsHandler;
+      break;
+    case "presets":
+      handler = PresetHandler;
+      break;
+    default:
+      console.warn(`Unhandled program: ${user.program}`);
+      return;
+  }
+
+  console.log(`Selected handler: ${handler.name}`);
+  await handler(user, callback);
 }

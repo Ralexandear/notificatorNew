@@ -17,7 +17,8 @@ export class User extends IncapsulationModel<UserModel> implements UserAttribute
   private constructor(protected model: UserModel) {
     super(model)
   }
-
+  
+  
   
 
   get id() {
@@ -33,7 +34,7 @@ export class User extends IncapsulationModel<UserModel> implements UserAttribute
   }
 
   set messageId(messageId: number | null) {
-    this.messageId = messageId
+    this.model.messageId = messageId
   }
 
   get presetStatus() {
@@ -86,25 +87,21 @@ export class User extends IncapsulationModel<UserModel> implements UserAttribute
 
 
   /** TELEGRAM METHODS */
-  sendMessage(text: string, messageOptions: TelegramBot.SendMessageOptions = {}, saveMessageId = false){
+  async sendMessage(text: string, messageOptions: TelegramBot.SendMessageOptions = {}, saveMessageId = false){
     messageOptions.parse_mode ??= 'HTML';
     messageOptions.disable_web_page_preview ??= undefined
     
-    const job = () => Bot.sendMessage(this.telegramId, text, messageOptions)
-        .then(message => saveMessageId && (this.messageId = message.message_id))
-    
-    TelegramQueue.add(job);
-    return this
+    return Bot.sendMessage(this.telegramId, text, messageOptions)
+      .then(message => {
+        if (saveMessageId) this.messageId = message.message_id
+        return message
+      })
   }
 
-  deletePreviousInlineMessage () {
+  async deletePreviousInlineMessage () {
     if (! this.messageId) return this
     //@ts-ignore
-    const job = () => Bot.editMessageReplyMarkup( null, {chat_id: this.telegramId, message_id:  this.messageId, })
-      .finally(() => this.messageId = null)
-
-    TelegramQueue.add(job);
-    return this
+    return Bot.editMessageReplyMarkup( null, {chat_id: this.telegramId, message_id:  this.messageId, }).finally(() => this.messageId = null)
   }
 
   sendSticker (sticker: string | Buffer) {
