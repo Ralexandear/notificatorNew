@@ -1,13 +1,12 @@
 import TelegramBot from "node-telegram-bot-api";
-import { Preset, User } from "../../../../database/models";
 import splitCommand from "../../../utilities/splitCommand";
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons";
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor";
 import { PresetActionType } from "../../../types/PresetActionType";
-import { Log } from "../../../utilities/Log";
-import BotError from "../../../Errors/BotError";
+import BotError from "../../../../Errors/BotError";
 import PointsController from "../../../../controllers/databaseControllers/PointsController";
-import { log } from "../../..";
+import { User } from "../../../../database/models/public/User";
+import { Preset } from "../../../../database/models/public/Preset";
 
 
 
@@ -41,9 +40,9 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
     
   if (presetAction === undefined) { //отвечает за активацию и деактивацию пресета глобально
     if (action === Buttons.activate().callback_data) {
-      user.preset().activate();
+      // user.preset().activate();
     } else if (action === Buttons.deactivate().callback_data){
-      user.preset().deactivate();
+      // user.preset().deactivate();
     }
     openPresetMenu(user)
     return
@@ -75,25 +74,25 @@ export async function PresetHandler(user: User, callback: TelegramBot.CallbackQu
       }
       throw new Error('Selected point not found in reply markup!')
     })();
-    log(selectedPointId)
-    var selectedPoint = await getSelectedPoint(selectedPointId);
-    preset = await user.preset().getForPoint(selectedPoint.id);
 
-    if (action === Buttons.activate().callback_data) {
-      await preset.addPointsToListen(pointId)
-    } else if (action === Buttons.deactivate().callback_data){
-      await preset.removePointsToListen(pointId)
-    } else {
-      Log('Unhandled request, unsupported action', action as string);
-      return
-    }
+    var selectedPoint = await getSelectedPoint(selectedPointId);
+    // preset = await user.preset().getPointPreset(selectedPoint.id);
+
+    // if (action === Buttons.activate().callback_data) {
+    //   await preset.addPointsToListen(pointId)
+    // } else if (action === Buttons.deactivate().callback_data){
+    //   await preset.removePointsToListen(pointId)
+    // } else {
+    //   console.log('Unhandled request, unsupported action', action as string);
+    //   return
+    // }
   } else {
-    Log('Unhandled request, unsupported presetAction', presetAction as string);
+    console.log('Unhandled request, unsupported presetAction', presetAction as string);
     return
   }
 
-  const {text, reply_markup} = await MessageConstructor.presets(user, selectedPoint, preset);
-  user.editMessageText(text, {reply_markup})
+  // const {text, reply_markup} = await MessageConstructor.presets(user, selectedPoint, preset);
+  // user.editMessageText(text, {reply_markup})
   return
 }
 

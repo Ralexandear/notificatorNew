@@ -1,4 +1,4 @@
-export function Log(...text: any[]) {
+export function console.log(...text: any[]) {
   // Используем new Error().stack для получения стека вызовов
   const stack = new Error().stack;
 

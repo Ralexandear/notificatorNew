@@ -1,47 +1,48 @@
-import { Op } from "sequelize";
-import { Point } from "../../database/models";
-import { parseCheckInteger } from "../../bot/utilities/parseCheckInteger";
-import { PointAttributes } from "../../bot/interfaces/databaseInterfaces";
-import { ListenersDefaultValue } from "../../bot/types/ListenersType";
+import { Op } from "sequelize"
+import { parseCheckInteger } from "../../bot/utilities/parseCheckInteger"
+import { Point } from "../../database/models/public/Point"
+import { PointModel } from "../../database/models/sequelize/Point.model"
+import { FatalError } from "../../Errors/FatalError"
+import { PointAttributes } from "../../interfaces/Point.attributes"
+
 
 
 class PointsControllerClass {
   async create( pointNumber: string | number ){
-    return Point.create({id: parseCheckInteger(pointNumber)})
+    return PointModel.create({id: parseCheckInteger(pointNumber)}).then(Point.init)
   }
 
   async getAll(){
-    return Point.findAll({order: [['id', 'ASC']]})
+    return PointModel.findAll({order: [['id', 'ASC']]}).then(array => array.map(Point.init))
   }
 
-  async find( pointNumber: string | number ) {
-    const point = await Point.findOne({ where: { id: parseCheckInteger(pointNumber )}} )
-    if (point) return point
-    throw new ReferenceError(`Point #${pointNumber} was not found in database`)
+  async find( pointId: number ) {
+    const point = await PointModel.findOne({ where: { id: pointId}} )
+    if (point) return Point.init(point)
+    
+      throw new FatalError(`Point #${pointId} was not found in database`)
   }
 
-  async getPoints( ...pointNumbers: (string | number)[] ) {
-    const points = await Point.findAll(
+  async getPoints( ...pointIds: (string | number)[] ) {
+    const points = await PointModel.findAll(
       {
         where: {
           id: {
-            [Op.in]: pointNumbers
+            [Op.in]: pointIds
           }
         }
       }
     )
 
-    if (pointNumbers.length === points.length) return points;
+    if (pointIds.length === points.length) return points.map(Point.init);
     throw new Error('Unexpected error, expected point numbers not equal to quantity of points requested');
   }
 
   async getPointIds(){
-    return Point.findAll({attributes: ['id'] as (keyof PointAttributes)[]}).then(result => result.map(e => e.id))
+    return PointModel.findAll({attributes: ['id'] as (keyof PointAttributes)[]}).then(result => result.map(e => e.id))
   }
 
-  async removeAllUsers () {
-    return Point.update({morning: null, evening: null, _listeners: ListenersDefaultValue}, {where: {},returning: false})
-  }
+
 
 }
 

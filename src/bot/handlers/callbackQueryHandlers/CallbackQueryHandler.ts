@@ -3,17 +3,16 @@ import { botInitializationPromise } from "../..";
 import UserController from "../../../controllers/databaseControllers/UserController";
 import splitCommand from "../../utilities/splitCommand";
 import Buttons from "../../messageConstructor/replyMarkup/Buttons";
-import { Log } from "../../utilities/Log";
 import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
 import { AcceptOrderHandler } from "./modules/AcceptOrderHandler";
 import { SelectPointsHandler } from "./modules/SelectPointsHandler";
 import PresetHandler from "./modules/PresetHandler";
-import { User } from "../../../database/models";
+import { User } from "../../../database/models/public/User";
 
 export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery) {
   try{
     await botInitializationPromise;
-    Log('new callback', callback)
+    console.log('new callback', callback)
 
     const telegramId = callback.from.id.toString()
     const user = await UserController.find( telegramId );
@@ -24,7 +23,7 @@ export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery)
     if (! username){
       const {text, reply_markup} = MessageConstructor.errors().usernameIsMissing();
       user.sendMessage(text, {reply_markup})
-      Log('Username is missing, callbackId', callback.id)
+      console.log('Username is missing, callbackId', callback.id)
       return
     }
     
@@ -32,18 +31,18 @@ export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery)
     if (! callback.data) return
 
     const {action} = splitCommand( callback.data )
-    console.log(CallbackQueryHandler.name, 'Пользователь:', user.name, 'id', user.id, 'комманда:', action)
+    console.log(CallbackQueryHandler.name, 'Пользователь:', user.fullName, 'id', user.id, 'комманда:', action)
     
     
     if (action === Buttons.acceptOrder().callback_data) {
       AcceptOrderHandler(user, callback)
       return
     }
-
+    //@ts-ignore Ошибка в библиотеке note-telegram-bot-api
     user.answerCallbackQuery(callback.id, {cache_time: 2});
 
     // if (user.messageId !== callback.message?.message_id) {
-    //   Log('Inline message id !== user.messageId, work stopped')
+    //   console.log('Inline message id !== user.messageId, work stopped')
     //   return
     // }
 
@@ -52,13 +51,13 @@ export async function CallbackQueryHandler (callback: TelegramBot.CallbackQuery)
     if (user.program === 'selectPoints') handler = SelectPointsHandler
     else if (user.program === 'presets') handler = PresetHandler
     else {
-      Log('Unhandled user program:', user.program)
+      console.log('Unhandled user program:', user.program)
       return
     }
     
-    Log('Selected callback handler', handler.name, 'callbackId:', callback.id);
+    console.log('Selected callback handler', handler.name, 'callbackId:', callback.id);
     await handler(user, callback)
   } catch (e) {
-    Log('Catched error', e)
+    console.log('Catched error', e)
   }
 }

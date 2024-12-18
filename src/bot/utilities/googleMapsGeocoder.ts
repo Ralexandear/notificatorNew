@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import axios from 'axios';
 
-const googleMapsUrl = process.env.GOOGLE_MAPS_GEOCODER_URL;
+const googleMapsUrl = process.env.GOOGLE_MAPS_URL;
 if (! googleMapsUrl) throw new Error('Required parameter googleMapsUrl is missing in env!')
 
 

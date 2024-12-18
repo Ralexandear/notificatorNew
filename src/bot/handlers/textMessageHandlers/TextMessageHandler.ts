@@ -2,11 +2,11 @@ import TelegramBot from "node-telegram-bot-api";
 import { botInitializationPromise } from "../..";
 import NotificatorHandler from "./modules/NotificatorHandler";
 import UserController from "../../../controllers/databaseControllers/UserController";
-import { User } from "../../../database/models";
 import { MessageConstructor } from "../../messageConstructor/MessageConstructor";
 import MenuHandler from "./modules/MenuHandler";
-import CommandsFreezer from "../../../controllers/CommandsFreezer";
-import { UserStatusEnum } from "../../enums/UserStatusEnum";
+import { UserModel } from "../../../database/models/sequelize/User.model";
+import { UserStatusEnum } from "../../../enums/UserStatus.enum";
+import { User } from "../../../database/models/public/User";
 
 
 
@@ -26,13 +26,15 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
     // }
       
     if (! user){
-      const notUser = User.build({
-        telegramId,
-        _fullName: [message.from?.first_name, message.from?.last_name].join(' ') || 'Неопознанная лама',
-        _username: message.from?.username || '',
-        status: UserStatusEnum.active},
-        {isNewRecord: false}
-      )
+      const notUser = User.init(
+        UserModel.build({
+          telegramId,
+          fullName: [message.from?.first_name, message.from?.last_name].join(' ') || 'Неопознанная лама',
+          username: message.from?.username || '',
+          status: UserStatusEnum.active},
+          {isNewRecord: false}
+        )
+      ) 
       
       if (messageText === 'veryFunny') {
         if (! notUser.username) {
@@ -41,7 +43,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
           return
         }
         
-        const user = await UserController.create(notUser.telegramId, notUser.dataValues._fullName, notUser.username)
+        const user = await UserController.create(notUser.telegramId, notUser.fullName, notUser.username)
         user.openMenu(`Авторизация успешно завершена!`)
         return
       }
@@ -57,7 +59,7 @@ export async function TextMessageHandler(message: TelegramBot.Message) {
       return
     }
 
-    console.log('Пользователь:', user.name, 'id', user.id, 'Сообщение:', messageText)
+    console.log('Пользователь:', user.fullName, 'id', user.id, 'Сообщение:', messageText)
 
     if (user.status !== UserStatusEnum.active){
       const {text, reply_markup} = MessageConstructor.errors().authorizationError();

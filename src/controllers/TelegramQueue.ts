@@ -23,18 +23,19 @@ class TelegramQueue {
   }
 
   async add(handler: () => Promise<any | void>, options: TelegramQueueOptions = {}){
-    const {priority = 5, delay = 0} = options;
-    if (! this.queue[priority]){
-      this.queue[priority] = new Array()
+    await handler()
+    // const {priority = 5, delay = 0} = options;
+    // if (! this.queue[priority]){
+    //   this.queue[priority] = new Array()
 
-      if (! this.queueKeys.includes(priority)){
-        this.queueKeys.push(priority)
-        this.queueKeys.sort((a, b) => Number(a) - Number(b));
-      }
-    }
+    //   if (! this.queueKeys.includes(priority)){
+    //     this.queueKeys.push(priority)
+    //     this.queueKeys.sort((a, b) => Number(a) - Number(b));
+    //   }
+    // }
     
-    this.queue[priority].push(handler)
-    this.queueLength++
+    // this.queue[priority].push(handler)
+    // this.queueLength++
   }
 
   private async processQueue(): Promise<void> {

@@ -1,12 +1,13 @@
 // import { User } from "../database/models";
 
 import PointsController from "../../controllers/databaseControllers/PointsController"
-import { Point, User } from "../../database/models"
-import { PostfixEnum } from "../enums/PostfixEnum"
+import { Point } from "../../database/models/public/Point"
+import { User } from "../../database/models/public/User"
+import { PostfixEnum } from "../../enums/PostfixEnum"
 import { ShiftSelectorType, ShiftType } from "../types/ShiftType"
 
 const getDateString = (date = new Date()) => date.toLocaleDateString('ru', {weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'})
-const getUserlink = (user: User) => `<a href="t.me/${user.username}">${user.name}</a>`
+const getUserlink = (user: User) => `<a href="t.me/${user.username}">${user.fullName}</a>`
 
 export class MessageTextClass {
   // private user: User
@@ -107,7 +108,7 @@ export class MessageTextClass {
         for (const shiftType of shiftTypes){
           const user = await point.getUser( shiftType );
           const postfix = PostfixEnum[ shiftType ];
-          textArray.push(point.point + postfix + ': ' + (user === undefined ? '🟢' : getUserlink(user)))
+          textArray.push(point.point + postfix + ': ' + (user === null ? '🟢' : getUserlink(user)))
         }
 
         return textArray.join('\n')

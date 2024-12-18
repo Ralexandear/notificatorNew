@@ -1,7 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
-import { User } from "../../../../database/models";
 import splitCommand from "../../../utilities/splitCommand";
-import { Log } from "../../../utilities/Log";
+import { User } from "../../../../database/models/public/User";
 
 export async function AcceptOrderHandler(user: User, callback: TelegramBot.CallbackQuery){
   if (! callback.data) return
@@ -10,7 +9,7 @@ export async function AcceptOrderHandler(user: User, callback: TelegramBot.Callb
   const reply_to_message_id = Number(params);
 
   if ( isNaN(reply_to_message_id) ) {
-    Log('Parameter reply to messageId is missing')
+    console.log('Parameter reply to messageId is missing')
     return
   }
 
@@ -27,7 +26,7 @@ export async function AcceptOrderHandler(user: User, callback: TelegramBot.Callb
     reply_markup.inline_keyboard.splice(rowIx, 1);
     return reply_markup;
   })();
-  
+  //@ts-ignore
   user.answerCallbackQuery(callback.id, {text: '✅ Заказ подтвержден!'})
 
   const messageId = callback.message?.message_id

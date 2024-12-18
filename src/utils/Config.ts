@@ -3,7 +3,6 @@ import fs from 'fs';
 import ConfigAttributes from '../interfaces/configInterface';
 import Validator from './Validator';
 import ValidationError from '../errors/ValidationError';
-import CronCleanPoints from '../cron/CronCleanPoints';
 
 // Определяем путь к файлу конфигурации
 const fileDir = path.resolve(__dirname, '../../config.json');
@@ -65,7 +64,7 @@ class ConfigClass {
       throw new ValidationError('Time validation error!')
     }
     this.set('updatingTime', { hours, minutes })
-    CronCleanPoints.updateTimer(hours, minutes)
+    // CronCleanPoints.updateTimer(hours, minutes)
   }
 
   get lastShiftClearing() {
@@ -80,4 +79,6 @@ class ConfigClass {
 
 // Экспортируем экземпляр класса
 export const Config = new ConfigClass();
+console.log(Config, 1)
+
 export default Config;

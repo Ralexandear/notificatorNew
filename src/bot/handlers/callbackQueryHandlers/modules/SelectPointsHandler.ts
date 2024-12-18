@@ -1,13 +1,13 @@
 import TelegramBot from "node-telegram-bot-api"
-import { Point, User } from "../../../../database/models"
-import { Log } from "../../../utilities/Log"
 import splitCommand from "../../../utilities/splitCommand"
 import Buttons from "../../../messageConstructor/replyMarkup/Buttons"
 import { MessageConstructor } from "../../../messageConstructor/MessageConstructor"
 import { ShiftSelectorType } from "../../../types/ShiftType"
 import PointsController from "../../../../controllers/databaseControllers/PointsController"
 import { ShiftSizeType } from "../../../types/ShiftSizeType"
-import { Icons } from "../../../enums/IconsEnum"
+import { User } from "../../../../database/models/public/User"
+import { Point } from "../../../../database/models/public/Point"
+import { Icons } from "../../../../enums/IconsEnum"
 
 
 
@@ -26,13 +26,13 @@ export async function SelectPointsHandler (user: User, callback: TelegramBot.Cal
     if (isNaN(id)) return
     const point = await PointsController.find( id );
     if (! point) {
-      Log('Point with id', pointId, 'notFound')
+      console.log('Point with id', pointId, 'notFound')
       return
     };
     return point
   };
 
-  Log('callbackId', callback.id)
+  console.log('callbackId', callback.id)
   const {action, params} = splitCommand(callback.data)
 
   if (Buttons.halfShift().callback_data === action) {
@@ -44,7 +44,7 @@ export async function SelectPointsHandler (user: User, callback: TelegramBot.Cal
     const point = await getPoint(pointId);
     if (! point) return
 
-    await point.setUserToShift(user, shiftType, true);
+//    await point.setUserToShift(user, shiftType, true);
     var shiftSize: ShiftSizeType = shiftType === 'full' ? 'full' : 'half';
   } else {
     if (action !== Buttons.selectButton().callback_data) return
@@ -57,15 +57,15 @@ export async function SelectPointsHandler (user: User, callback: TelegramBot.Cal
     
     console.log(icon)
     if (icon === Icons.greenDot){
-      await point.removeUser(user, shiftType);
+   //   await point.removeUser(user, shiftType);
     } else if ([Icons.yellowDot, Icons.redDot].includes(icon as Icons)) {
-      const pointIsSet = await point.setUserToShift(user, shiftType);
-      console.log(pointIsSet)
-      if (! pointIsSet) return sendBusyAlert(point, shiftType);
+     // const pointIsSet = await point.setUserToShift(user, shiftType);
+      // console.log(pointIsSet)
+      // if (! pointIsSet) return sendBusyAlert(point, shiftType);
     } else return
   }
 
-  Log('ShiftSize is', shiftSize)
+  console.log('ShiftSize is', shiftSize)
   const {text, reply_markup} = await MessageConstructor.points().pointList(user, shiftSize)
   user.editMessageText(text, {reply_markup});
 }

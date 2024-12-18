@@ -1,3 +1,4 @@
+//@ts-nocheck
 import TelegramBot from "node-telegram-bot-api"
 import PointsController from "../../../../controllers/databaseControllers/PointsController"
 import { ShiftType } from "../../../types/ShiftType"
@@ -189,7 +190,7 @@ export default async function NotificatorHandler( message: TelegramBot.Message )
       informedUsers.add( userId );
 
       user.sendMessage(text, { reply_markup })
-      console.log('Сообщение слушателя успешно добавлено в очередь, получатель:', user.name);
+      console.log('Сообщение слушателя успешно добавлено в очередь, получатель:', user.fullName);
 
     })
   } catch (e) {

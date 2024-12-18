@@ -1,31 +1,37 @@
-import { Json } from "sequelize/types/utils";
-import { User } from "../../database/models";
-import RedisController from "../RedisController";
-import { Op } from "sequelize";
-import { UserStatusEnum } from "../../bot/enums/UserStatusEnum";
+import { Op } from "sequelize"
+import { User } from "../../database/models/public/User"
+import { UserModel } from "../../database/models/sequelize/User.model"
+import { AuthError } from "../../Errors/AuthError"
+import { FatalError } from "../../Errors/FatalError"
 
 
 class UserControllerClass {
-  create( telegramId: number | string, fullName: string, username: string){
-    return User.create({ telegramId: telegramId.toString(), _fullName: fullName, _username: username, status: UserStatusEnum.active})
+  async findOrCreate(telegramId: string, fullName: string, username: string) {
+    return UserModel.findOrCreate({where: {telegramId}, defaults: {telegramId, fullName, username}}).then(([e]) =>User.init(e))
+  }
+  
+  async create( telegramId: number | string, fullName: string, username: string){
+    return UserModel.create({ telegramId: telegramId.toString(), fullName, username}).then(User.init)
   }
 
-  async find( telegramId: number | string ){
-    const userdata = await RedisController.get(telegramId);
-    if ( userdata ) return User.build(JSON.parse( userdata ), { isNewRecord: false });
+  async find( telegramId: number | string, username?: string ){
+    const user = await UserModel.findOne( { where: { telegramId: telegramId.toString() }} ).then(e => e && User.init(e))
     
-    const user = await User.findOne( { where: { telegramId: telegramId.toString() }} ) 
-    if (user) return user.saveToRedis()
+    if (! user) {
+      throw AuthError.userNotFound(telegramId, username)
+    }
+
+    return user
   }
 
   async getById( id: number ){
-    const user = await User.findByPk( id )
-    if (! user) throw new Error(`User with id ${id} not found!`)      
-    return user.saveToRedis()
+    const user = await UserModel.findByPk( id ).then(e => e && User.init(e))
+    if (! user) throw new FatalError(`User with id ${id} not found!`)
+    return user      
   }
 
   async getByIds( ...ids: number[]){
-    const users = await User.findAll({
+    const users = await UserModel.findAll({
       where: {
         id: {
           [Op.in] : ids
@@ -33,17 +39,11 @@ class UserControllerClass {
       }
     })
 
-    if (ids.length === users.length) return users.map(e => e.saveToRedis())
-    throw 'The number of users does not match the requested one'
-  }
-
-  saveChanges( user: User ) {
-    return Promise.all([
-      user.save(),
-      RedisController.set(user.id, user.dataValues)
-    ])
+    if (ids.length === users.length) return users.map(User.init)
+    throw new FatalError('The number of users does not match the requested user id array')
   }
 }
+
 
 export const UserController = new UserControllerClass()
 export default UserController

@@ -1,4 +1,4 @@
-import { ShiftSelectorType } from "../types/ShiftType";
+import { ShiftSelectorType } from "../bot/types/ShiftType";
 
 export const PostfixEnum: {[key in ShiftSelectorType]: string} = Object.freeze(
   {

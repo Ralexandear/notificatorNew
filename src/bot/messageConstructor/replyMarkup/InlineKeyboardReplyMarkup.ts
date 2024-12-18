@@ -1,15 +1,16 @@
 import TelegramBot from "node-telegram-bot-api";
 import Buttons from "./Buttons";
-import { Point, Preset, User } from "../../../database/models";
 import PointsController from "../../../controllers/databaseControllers/PointsController";
 import { SelectPointsTempType } from "../../types/TempType";
 import { ShiftSelectorType, ShiftType } from "../../types/ShiftType";
 import { PresetActionType } from "../../types/PresetActionType";
-import PresetController from "../../../controllers/databaseControllers/PresetController";
 import { ShiftSizeType } from "../../types/ShiftSizeType";
-import { ShiftEnum } from "../../enums/ShiftEnum";
-import { Icons } from "../../enums/IconsEnum";
 import Config from "../../../utils/Config";
+import { User } from "../../../database/models/public/User";
+import { Icons } from "../../../enums/IconsEnum";
+import { Point } from "../../../database/models/public/Point";
+import { ShiftEnum } from "../../../enums/ShiftEnum";
+import { Preset } from "../../../database/models/public/Preset";
 
 
 type InlineKeyboardRow = TelegramBot.InlineKeyboardButton[];
@@ -70,7 +71,7 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
       },
 
       async presets(user: User) {
-        if (! user.presetIsActive) return new InlineKeyboardReplyMarkup(1, Buttons.activate());
+        if (! user.presetStatus) return new InlineKeyboardReplyMarkup(1, Buttons.activate());
         
         const points = await PointsController.getAll()
         const icon = Icons.redPin
@@ -153,25 +154,25 @@ export class InlineKeyboardReplyMarkup implements TelegramBot.InlineKeyboardMark
     }
   }
 
-  static async presets(user: User, selectedPointOrPreset: Point | Preset){
+  // static async presets(user: User, selectedPointOrPreset: Point | Preset){
     
-    const [points, preset, selectedPointId] = await ( async () => {
-      const pointsPromise = PointsController.getAll()
-      if (selectedPointOrPreset instanceof Preset) return pointsPromise.then(points => [points, selectedPointOrPreset, selectedPointOrPreset.pointId]);
-      return Promise.all([pointsPromise, PresetController.getPresetForPoint(user.id, selectedPointOrPreset.id)]).then(result => [...result, selectedPointOrPreset.id])
-    })() as [Point[], Preset, number];
+  //   const [points, preset, selectedPointId] = await ( async () => {
+  //     const pointsPromise = PointsController.getAll()
+  //     if (selectedPointOrPreset instanceof Preset) return pointsPromise.then(points => [points, selectedPointOrPreset, selectedPointOrPreset.pointId]);
+  //     return Promise.all([pointsPromise, PresetController.getPointPreset(user.id, selectedPointOrPreset.id)]).then(result => [...result, selectedPointOrPreset.id])
+  //   })() as [Point[], Preset, number];
     
     
-    const pointsToListen = new Set(preset?.pointsToListen || []);
-    const presetAction: PresetActionType = 'selectPreset'; 
-    const buttons = points.map(point => {
-      if ( point.id === selectedPointId ) return Buttons.backButton(Icons.redPin + ' ' + point.point, presetAction, point.id);
-      if ( pointsToListen.has( point.id )) return Buttons.deactivate(Icons.greenDot + ' ' + point.point, presetAction, point.id)
-      return Buttons.activate(Icons.yellowDot + ' ' + point.point, presetAction, point.id);
-    })
+  //   const pointsToListen = new Set(preset?.pointsToListen || []);
+  //   const presetAction: PresetActionType = 'selectPreset'; 
+  //   const buttons = points.map(point => {
+  //     if ( point.id === selectedPointId ) return Buttons.backButton(Icons.redPin + ' ' + point.point, presetAction, point.id);
+  //     if ( pointsToListen.has( point.id )) return Buttons.deactivate(Icons.greenDot + ' ' + point.point, presetAction, point.id)
+  //     return Buttons.activate(Icons.yellowDot + ' ' + point.point, presetAction, point.id);
+  //   })
     
-    return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons);
-  }
+  //   return new InlineKeyboardReplyMarkup(maxRowWidth, ...buttons);
+  // }
 
 }
 

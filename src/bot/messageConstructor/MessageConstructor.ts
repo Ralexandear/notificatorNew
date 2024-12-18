@@ -1,10 +1,11 @@
-import TelegramBot from "node-telegram-bot-api";
-import { Point, Preset, User } from "../../database/models"
 import MessageText from "./messageText"
 import { InlineKeyboardReplyMarkup } from "./replyMarkup/InlineKeyboardReplyMarkup";
 import ReplyKeyboardMarkup from "./replyMarkup/ReplyKeyboardMarkup";
 import { ShiftSelectorType } from "../types/ShiftType";
 import { ShiftSizeType } from "../types/ShiftSizeType";
+import { User } from "../../database/models/public/User";
+import { Point } from "../../database/models/public/Point";
+import { Preset } from "../../database/models/public/Preset";
 
 
 export class MessageConstructor {
@@ -125,10 +126,10 @@ export class MessageConstructor {
     }
   }
 
-  static async presets(user: User, selectedPoint: Point, preset?: Preset){
-    const text = MessageText.presets(selectedPoint)
-    const reply_markup = await InlineKeyboardReplyMarkup.presets(user, preset || selectedPoint)
-    return {text, reply_markup}
-  }
+  // static async presets(user: User, selectedPoint: Point, preset?: Preset){
+  //   const text = MessageText.presets(selectedPoint)
+  //   const reply_markup = await InlineKeyboardReplyMarkup.presets(user, preset || selectedPoint)
+  //   return {text, reply_markup}
+  // }
 
 }
